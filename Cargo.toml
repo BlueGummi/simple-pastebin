@@ -1,0 +1,9 @@
+[package]
+name = "SimplePastebin"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+axum = "0.7.5"
+chrono = "0.4.38"

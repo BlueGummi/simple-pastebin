@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Pastebin</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            white-space: pre-wrap; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: background-color 0.5s, color 0.5s;
+        }
+        body.light {
+            background-color: #ffffff;
+            color: #000000;
+        }
+        body.dark {
+            background-color: #333333;
+            color: #ffffff;
+        }
+        .container {
+            display: flex;
+            width: 100%;
+            max-width: 800px;
+            overflow-x: auto; 
+            position: relative;
+        }
+        .timestamps {
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            padding: 10px;
+            min-width: 150px;
+            max-width: 200px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 16px;
+            position: relative;
+            transition: background-color 0.5s, color 0.5s; 
+        }
+        body.dark .timestamps {
+            background-color: #555555; 
+            color: #ffffff; 
+        }
+        .data {
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            padding: 10px;
+            flex: 1; 
+            overflow-x: auto;
+            font-size: 16px;
+            min-height: 3em; 
+            transition: background-color 0.5s, color 0.5s; 
+        }
+        body.dark .data {
+            background-color: #555555; 
+            color: #ffffff; 
+        }
+        #inputForm {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 800px;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        #input {
+            width: 100%;
+            min-height: 30px;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 16px; 
+        }
+        #submitButton {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px; 
+            color: white;
+            background-color: green; 
+            text-transform: uppercase; 
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px; 
+            width: 100%; 
+            max-width: 200px; 
+            margin: 0 auto; 
+            margin-bottom: 10px; 
+        }
+        #deleteButton {
+            padding: 5px 10px; 
+            border: none;
+            border-radius: 10px; 
+            color: white;
+            background-color: red; 
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px; 
+            position: absolute; 
+            top: 10px; 
+            right: 10px; 
+        }
+        #themeToggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #ddd;
+            transition: background-color 0.3s;
+        }
+        h1 {
+            font-size: 20px; 
+            margin-bottom: 10px; 
+            text-align: center; 
+        }
+    </style>
+</head>
+<body class="light">
+    <button id="themeToggle">Toggle Theme</button>
+    <form id="inputForm">
+        <textarea id="input" name="input" required rows="1" oninput="autoResize(this)" placeholder="Type your paste here..."></textarea><br>
+        <input type="submit" id="submitButton" value="Submit">
+    </form>
+
+    <h1>Current Pastebin</h1>
+    <div class="container">
+        <button id="deleteButton">Delete</button>
+        <div class="timestamps" id="timestamps">Loading...</div>
+        <div class="data" id="fileContent">Loading...</div>
+    </div>
+
+    <script>
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            const currentTheme = document.body.className;
+            document.body.className = currentTheme === 'light' ? 'dark' : 'light';
+        });
+
+        async function loadLog() {
+            try {
+                const response = await fetch('input.log');
+                if (!response.ok) throw new Error('Network response was not ok');
+                const text = await response.text();
+                parseLogData(text);
+            } catch (error) {
+                console.error('Error loading log:', error);
+                document.getElementById('fileContent').textContent = 'Error loading log';
+                document.getElementById('timestamps').textContent = '';
+            }
+        }
+
+        function parseLogData(data) {
+            const lines = data.split('\n');
+            const timestamps = [];
+            const content = [];
+            const timestampRegex = /^\d{2}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2} (AM|PM) \|: /;
+
+            lines.forEach(line => {
+                const match = timestampRegex.exec(line);
+                if (match) {
+                    const timestamp = line.substring(0, match[0].length - 3).trim();
+                    const contentText = line.substring(match[0].length).trim();
+                    timestamps.push(timestamp);
+                    content.push(contentText);
+                } else {
+                    timestamps.push('');
+                    content.push(line); 
+                }
+            });
+
+            document.getElementById('timestamps').textContent = timestamps.join('\n');
+            document.getElementById('fileContent').textContent = content.join('\n');
+        }
+
+        async function deleteLog() {
+            const confirmation = confirm("Are you sure you want to delete the whole pastebin?");
+            if (confirmation) {
+                try {
+                    const response = await fetch('/clear', {
+                        method: 'POST' 
+                    });
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    loadLog(); 
+                } catch (error) {
+                    console.error('Error clearing log:', error);
+                }
+            }
+        }
+
+        document.getElementById('deleteButton').addEventListener('click', deleteLog);
+
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }
+
+        document.getElementById('inputForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const inputData = document.getElementById('input').value;
+            if (inputData) {
+                try {
+                    const response = await fetch('/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'text/plain',
+                        },
+                        body: inputData
+                    });
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    document.getElementById('input').value = '';
+                    autoResize(document.getElementById('input'));
+                    loadLog();
+                } catch (error) {
+                    console.error('Error submitting data:', error);
+                }
+            }
+        });
+
+        document.getElementById('input').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                document.getElementById('inputForm').dispatchEvent(new Event('submit'));
+            }
+        });
+
+        window.onload = loadLog;
+        setInterval(loadLog, 5000);
+    </script>
+</body>
+</html>

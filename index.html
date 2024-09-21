@@ -156,12 +156,12 @@
       <div class="data" id="fileContent">Loading...</div>
     </div>
     <script>
+      let fileName;
       // theme changer
       document.getElementById('themeToggle').addEventListener('click', () => {
         let currentTheme = document.body.className;
         document.body.className = currentTheme === 'light' ? 'dark' : 'light';
       });
-      
       // load the expiration value from config.toml
       async function loadConfig() {
         try {
@@ -172,12 +172,20 @@
           let expirationLine = parseExpiration(text);
           console.log('Parsed Expiration Line:', expirationLine); // debug
           displayExpirationMessage(expirationLine);
+          fileName = parseFileName(text);
+          console.log('Parsed filename: ', fileName); // debug
         } catch (error) {
           console.error('Error loading config:', error);
           document.getElementById('expirationMessage').textContent = 'Error loading expiration';
         }
       }
 
+      function parseFileName(tomlText) {
+        return removeQuotes(tomlText.split('logname =')[1].trim());
+      }
+      function removeQuotes(text) {
+        return text.replace(/^"|"$/g, '');
+      }
       function parseExpiration(tomlText) {
         let expirationMatch = tomlText.match(/expiration\s*=\s*".*?"/);
         return expirationMatch ? expirationMatch[0] : '';
@@ -185,7 +193,12 @@
 
       function displayExpirationMessage(expirationLine) {
         const expirationValue = expirationLine.match(/"(.+?)"/)[1]; // get value from quotes
-        const timeUnits = { d: 'day', h: 'hour', m: 'minute', s: 'second' };
+        const timeUnits = {
+          d: 'day',
+          h: 'hour',
+          m: 'minute',
+          s: 'second'
+        };
         const parts = expirationValue.match(/(\d+)([dhms])/g) || [];
         const formattedParts = parts.map(part => {
           const value = part.slice(0, -1);
@@ -195,11 +208,10 @@
         });
         document.getElementById('expirationMessage').textContent = ` (Clears every ${formattedParts.join(', ')})`;
       }
-
       // Load log
       async function loadLog() {
         try {
-          let response = await fetch('input.log');
+          let response = await fetch(fileName);
           if (!response.ok) throw new Error('Network response was not ok');
           let text = await response.text();
           parseLogData(text);
@@ -209,7 +221,6 @@
           document.getElementById('timestamps').textContent = '';
         }
       }
-
       // Parse log data
       function parseLogData(data) {
         let lines = data.split('\n');
@@ -231,7 +242,6 @@
         document.getElementById('timestamps').textContent = timestamps.join('\n');
         document.getElementById('fileContent').textContent = content.join('\n');
       }
-
       // Delete button
       async function deleteLog() {
         let confirmation = confirm("Are you sure you want to delete the whole pastebin?");
@@ -253,7 +263,6 @@
         textarea.style.height = 'auto';
         textarea.style.height = textarea.scrollHeight + 'px';
       }
-
       // Network stuff
       document.getElementById('inputForm').addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -276,14 +285,12 @@
           }
         }
       });
-
       document.getElementById('input').addEventListener('keydown', function(event) {
         if (event.key === 'Enter' && !event.shiftKey) {
           event.preventDefault();
           document.getElementById('inputForm').dispatchEvent(new Event('submit'));
         }
       });
-
       window.onload = () => {
         loadConfig(); // Load the configuration
         loadLog(); // Load the log

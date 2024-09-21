@@ -1,21 +1,48 @@
 use axum::{
-    Router,
-    routing::{post, get},
+    routing::{get, post},
     response::{Html, IntoResponse},
+    Router,
 };
-use tokio::{sync::mpsc, task};
-use std::{fs, fs::OpenOptions, io::Write};
 use chrono::Local;
-use serde::Deserialize;
+use config::Config;
+use std::{fs, fs::OpenOptions, io::Write, thread};
+use std::time::{Duration, Instant};
+use tokio::sync::mpsc;
+use tokio::task;
+mod config;
 
-#[derive(Debug, Deserialize)]
-struct Config {
-    address: String,
-    port: String,
+fn clear_file_after_duration(file_path: &str, duration: Duration) {
+    loop {
+        let start_time = Instant::now();
+
+        // wait for the specified duration
+        thread::sleep(duration);
+
+        // clear the file contents
+        if let Err(e) = OpenOptions::new()
+            .write(true)
+            .truncate(true)
+            .open(file_path)
+            .and_then(|mut file| file.write_all(b"")) {
+            eprintln!("Failed to clear file: {}", e);
+        } else {
+            println!("File cleared after {:?}", start_time.elapsed());
+        }
+    }
 }
-
 #[tokio::main]
+
 async fn main() {
+    let config: Config = {
+        let config_content = fs::read_to_string("config.toml")
+            .expect("Failed to read config.toml");
+        toml::de::from_str(&config_content)
+            .expect("Failed to parse config.toml")
+    };
+    let total_duration = Duration::from_secs(config::parse_duration(&config.expiration));
+    std::thread::spawn(move || {
+        clear_file_after_duration("input.log", total_duration);
+    });
     server().await;
 }
 

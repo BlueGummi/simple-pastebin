@@ -13,3 +13,14 @@ port and IP address in config.toml must be strings
 ``cargo run --release``
 
 navigate to the IP address and port in your browser
+
+this is also compatible with cURL
+
+to paste data,
+``curl -X post -d "text here" <server name>``
+
+to read the pastebin,
+``curl <server name>/input.log``
+
+to delete the pastebin,
+``curl -X post <server name>/clear``

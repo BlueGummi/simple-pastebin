@@ -51,7 +51,8 @@ async fn server() {
         .route("/", post(write_to_file))
         .route("/", get(serve_form))
         .route("/input.log", get(serve_log))
-        .route("/clear", post(clear_log)); // clear that log
+        .route("/clear", post(clear_log)) // clear that log
+        .route("/config.toml", get(serve_config));
     let config: Config = {
         let config_content = fs::read_to_string("config.toml")
             .expect("Failed to read config.toml");
@@ -110,5 +111,13 @@ async fn serve_log() -> impl IntoResponse {
     match fs::read_to_string("input.log") {
         Ok(content) => content,
         Err(_) => "Error reading log file".to_string(),
+    }
+}
+
+// this will give the frontend the config file
+async fn serve_config() -> impl IntoResponse {
+    match fs::read_to_string("config.toml") {
+        Ok(content) => content,
+        Err(_) => "Error reading config.toml".to_string(),
     }
 }

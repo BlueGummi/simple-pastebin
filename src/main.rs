@@ -6,6 +6,13 @@ use axum::{
 use tokio::{sync::mpsc, task};
 use std::{fs, fs::OpenOptions, io::Write};
 use chrono::Local;
+use serde::Deserialize;
+
+#[derive(Debug, Deserialize)]
+struct Config {
+    address: String,
+    port: String,
+}
 
 #[tokio::main]
 async fn main() {
@@ -18,8 +25,15 @@ async fn server() {
         .route("/", get(serve_form))
         .route("/input.log", get(serve_log))
         .route("/clear", post(clear_log)); // clear that log
-
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:5050").await.unwrap();
+    let config: Config = {
+        let config_content = fs::read_to_string("config.toml")
+            .expect("Failed to read config.toml");
+        toml::de::from_str(&config_content)
+            .expect("Failed to parse config.toml")
+    };
+    let listener = tokio::net::TcpListener::bind(format!("{}:{}", config.address.trim(), config.port.trim())).await.unwrap();
+    
+    //let listener = tokio::net::TcpListener::bind("localhost:80").await.unwrap();
     axum::serve(listener, router).await.unwrap();
 
     let (_, mut rx) = mpsc::unbounded_channel();

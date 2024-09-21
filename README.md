@@ -7,8 +7,11 @@ A simple pastebin server, with a backend written in Rust  🚀 🚀 🚀
 
 ``cd simple-pastebin``
 
-Edit config.toml with the editor of choice, it currently supports a port and IP address.
-port and IP address in config.toml must be strings
+Edit config.toml with the editor of choice, it currently supports a port IP address, and a time to automatically clear the log file.
+Port, IP address, and expiration in config.toml must be strings
+Format the expiration like this
+
+"2d6h2m3s"
 
 ``cargo run --release``
 

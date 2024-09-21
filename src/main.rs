@@ -10,7 +10,12 @@ use std::time::{Duration, Instant};
 use tokio::sync::mpsc;
 use tokio::task;
 mod config;
-
+fn declare_config() -> Config {
+    let config_content = fs::read_to_string("config.toml")
+        .expect("Failed to read config.toml");
+    toml::de::from_str(&config_content)
+        .expect("Failed to parse config.toml")
+}
 fn clear_file_after_duration(file_path: &str, duration: Duration) {
     loop {
         let start_time = Instant::now();
@@ -33,32 +38,22 @@ fn clear_file_after_duration(file_path: &str, duration: Duration) {
 #[tokio::main]
 
 async fn main() {
-    let config: Config = {
-        let config_content = fs::read_to_string("config.toml")
-            .expect("Failed to read config.toml");
-        toml::de::from_str(&config_content)
-            .expect("Failed to parse config.toml")
-    };
+    let config = declare_config();
     let total_duration = Duration::from_secs(config::parse_duration(&config.expiration));
     std::thread::spawn(move || {
-        clear_file_after_duration("input.log", total_duration);
+        clear_file_after_duration(&(format!("{}", config.logname.trim())), total_duration);
     });
     server().await;
 }
 
 async fn server() {
+    let config = declare_config();
     let router: Router = Router::new()
         .route("/", post(write_to_file))
         .route("/", get(serve_form))
-        .route("/input.log", get(serve_log))
+        .route(&(format!("/{}", config.logname.trim())), get(serve_log))
         .route("/clear", post(clear_log)) // clear that log
         .route("/config.toml", get(serve_config));
-    let config: Config = {
-        let config_content = fs::read_to_string("config.toml")
-            .expect("Failed to read config.toml");
-        toml::de::from_str(&config_content)
-            .expect("Failed to parse config.toml")
-    };
     let listener = tokio::net::TcpListener::bind(format!("{}:{}", config.address.trim(), config.port.trim())).await.unwrap();
     
     //let listener = tokio::net::TcpListener::bind("localhost:80").await.unwrap();
@@ -73,15 +68,15 @@ async fn server() {
 }
 
 async fn write_to_file(body: String) {
+    let config = declare_config();
     let current_time = Local::now();
     let stringtime = current_time.format("%D %I:%M:%S %p").to_string();
     let data = format!("{} |: {}", stringtime, body);
     println!("{}", data);
-
     let mut file = OpenOptions::new()
         .append(true)
         .create(true) // make lil bro if lil bro is nonexistent
-        .open("input.log")
+        .open(format!("{}", config.logname.trim()))
         .unwrap();
     
     if let Err(e) = writeln!(file, "{}", data) {
@@ -90,8 +85,9 @@ async fn write_to_file(body: String) {
 }
 
 async fn clear_log() -> impl IntoResponse {
+    let config = declare_config();
     // Clear the contents of the log file
-    if let Err(e) = fs::write("input.log", "") {
+    if let Err(e) = fs::write(format!("{}", config.logname.trim()), "") {
         eprintln!("Error clearing log file: {}", e);
         return "Error clearing log file".into_response(); // error message
     }
@@ -108,7 +104,8 @@ async fn serve_form() -> Html<String> {
 
 // serve the log file 
 async fn serve_log() -> impl IntoResponse {
-    match fs::read_to_string("input.log") {
+    let config = declare_config();
+    match fs::read_to_string(format!("{}", config.logname.trim())) {
         Ok(content) => content,
         Err(_) => "Error reading log file".to_string(),
     }

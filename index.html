@@ -19,7 +19,7 @@
             color: #000000;
         }
         body.dark {
-            background-color: #333333;
+            background-color: #222222;
             color: #ffffff;
         }
         .container {
@@ -42,7 +42,7 @@
             transition: background-color 0.5s, color 0.5s; 
         }
         body.dark .timestamps {
-            background-color: #555555; 
+            background-color: #333333; 
             color: #ffffff; 
         }
         .data {
@@ -56,7 +56,7 @@
             transition: background-color 0.5s, color 0.5s; 
         }
         body.dark .data {
-            background-color: #555555; 
+            background-color: #333333; 
             color: #ffffff; 
         }
         #inputForm {
@@ -138,11 +138,13 @@
     </div>
 
     <script>
+        // theme changer
         document.getElementById('themeToggle').addEventListener('click', () => {
             const currentTheme = document.body.className;
             document.body.className = currentTheme === 'light' ? 'dark' : 'light';
         });
-
+        
+        // load log
         async function loadLog() {
             try {
                 const response = await fetch('input.log');
@@ -155,7 +157,8 @@
                 document.getElementById('timestamps').textContent = '';
             }
         }
-
+        
+        // parse data (this was a nightmare to make)
         function parseLogData(data) {
             const lines = data.split('\n');
             const timestamps = [];
@@ -179,6 +182,7 @@
             document.getElementById('fileContent').textContent = content.join('\n');
         }
 
+        // delete button
         async function deleteLog() {
             const confirmation = confirm("Are you sure you want to delete the whole pastebin?");
             if (confirmation) {
@@ -201,6 +205,7 @@
             textarea.style.height = textarea.scrollHeight + 'px';
         }
 
+        //network stuff
         document.getElementById('inputForm').addEventListener('submit', async (event) => {
             event.preventDefault();
             const inputData = document.getElementById('input').value;
@@ -231,7 +236,7 @@
         });
 
         window.onload = loadLog;
-        setInterval(loadLog, 5000);
+        setInterval(loadLog, 500);
     </script>
 </body>
 </html>

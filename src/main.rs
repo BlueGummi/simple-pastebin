@@ -5,29 +5,28 @@ use axum::{
 };
 use chrono::Local;
 use config::Config;
-use std::{fs, fs::OpenOptions, io::Write, thread};
+use std::{fs, fs::OpenOptions, io::Write};
 use std::time::{Duration, Instant};
-use tokio::sync::mpsc;
-use tokio::task;
+use tokio::{sync::mpsc, task, time};
+
 mod config;
+
 fn declare_config() -> Config {
     let config_content = fs::read_to_string("config.toml")
         .expect("Failed to read config.toml");
     toml::de::from_str(&config_content)
         .expect("Failed to parse config.toml")
 }
-fn clear_file_after_duration(file_path: &str, duration: Duration) {
+
+async fn clear_file_after_duration(file_path: &str, duration: Duration) {
     loop {
         let start_time = Instant::now();
-
-        // wait for the specified duration
-        thread::sleep(duration);
-
-        // clear the file contents
+        time::sleep(duration).await;
+        
         if let Err(e) = OpenOptions::new()
             .write(true)
             .truncate(true)
-            .open(file_path)
+            .open(&file_path)
             .and_then(|mut file| file.write_all(b"")) {
             eprintln!("Failed to clear file: {}", e);
         } else {
@@ -35,14 +34,18 @@ fn clear_file_after_duration(file_path: &str, duration: Duration) {
         }
     }
 }
-#[tokio::main]
 
+#[tokio::main]
 async fn main() {
     let config = declare_config();
     let total_duration = Duration::from_secs(config::parse_duration(&config.expiration));
-    std::thread::spawn(move || {
-        clear_file_after_duration(&(format!("{}", config.logname.trim())), total_duration);
+
+    // spawn a task to clear the file after the specified duration
+    let logname = config.logname.trim().to_string();
+    tokio::spawn(async move {
+        clear_file_after_duration(&logname, total_duration).await;
     });
+
     server().await;
 }
 
@@ -52,11 +55,12 @@ async fn server() {
         .route("/", post(write_to_file))
         .route("/", get(serve_form))
         .route(&(format!("/{}", config.logname.trim())), get(serve_log))
-        .route("/clear", post(clear_log)) // clear that log
+        .route("/clear", post(clear_log))
         .route("/config.toml", get(serve_config));
+    
     let listener = tokio::net::TcpListener::bind(format!("{}:{}", config.address.trim(), config.port.trim())).await.unwrap();
     println!("Server listening on {}:{}", config.address.trim(), config.port.trim());
-    //let listener = tokio::net::TcpListener::bind("localhost:80").await.unwrap();
+
     axum::serve(listener, router).await.unwrap();
 
     let (_, mut rx) = mpsc::unbounded_channel();
@@ -73,24 +77,23 @@ async fn write_to_file(body: String) {
     println!("{}", data);
     let mut file = OpenOptions::new()
         .append(true)
-        .create(true) // make lil bro if lil bro is nonexistent
+        .create(true)
         .open(format!("{}", config.logname.trim()))
         .unwrap();
     
     if let Err(e) = writeln!(file, "{}", data) {
-        eprintln!("couldn't write to file: {}", e);
+        eprintln!("Couldn't write to file: {}", e);
     }
 }
 
 async fn clear_log() -> impl IntoResponse {
     let config = declare_config();
-    // Clear the contents of the log file
     if let Err(e) = fs::write(format!("{}", config.logname.trim()), "") {
         eprintln!("Error clearing log file: {}", e);
-        return "Error clearing log file".into_response(); // error message
+        return "Error clearing log file".into_response();
     }
     println!("Log file cleared");
-    "Log file cleared".into_response() // success message
+    "Log file cleared".into_response()
 }
 
 async fn serve_form() -> Html<String> {
@@ -100,7 +103,6 @@ async fn serve_form() -> Html<String> {
     Html(content)
 }
 
-// serve the log file 
 async fn serve_log() -> impl IntoResponse {
     let config = declare_config();
     match fs::read_to_string(format!("{}", config.logname.trim())) {
@@ -109,7 +111,6 @@ async fn serve_log() -> impl IntoResponse {
     }
 }
 
-// this will give the frontend the config file
 async fn serve_config() -> impl IntoResponse {
     match fs::read_to_string("config.toml") {
         Ok(content) => content,

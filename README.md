@@ -28,7 +28,7 @@ to paste data,
 ``curl -X POST -d "text here" <server name>``
 
 to read the pastebin,
-``curl <server name>/input.log``
+``curl <server name>/<log name> # an example is 127.0.0.1:5050/input.log``
 
 to delete the pastebin,
 ``curl -X POST <server name>/clear``

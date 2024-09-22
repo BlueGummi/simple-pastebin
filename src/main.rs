@@ -55,7 +55,7 @@ async fn server() {
         .route("/clear", post(clear_log)) // clear that log
         .route("/config.toml", get(serve_config));
     let listener = tokio::net::TcpListener::bind(format!("{}:{}", config.address.trim(), config.port.trim())).await.unwrap();
-    
+    println!("Server listening on {}:{}", config.address.trim(), config.port.trim());
     //let listener = tokio::net::TcpListener::bind("localhost:80").await.unwrap();
     axum::serve(listener, router).await.unwrap();
 
@@ -69,9 +69,7 @@ async fn server() {
 
 async fn write_to_file(body: String) {
     let config = declare_config();
-    let current_time = Local::now();
-    let stringtime = current_time.format("%D %I:%M:%S %p").to_string();
-    let data = format!("{} |: {}", stringtime, body);
+    let data = format!("{} |: {}", Local::now().format("%D %I:%M:%S %p").to_string(), body);
     println!("{}", data);
     let mut file = OpenOptions::new()
         .append(true)

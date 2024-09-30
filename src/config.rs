@@ -9,7 +9,18 @@ pub struct Config {
     pub display_data: String,
     pub display_info: String,
 }
-
+impl Default for Config {
+    fn default() -> Self {
+        Config {
+            address: String::from("127.0.0.1"),
+            port: String::from("6060"),
+            expiration: String::from("10m"),
+            log_name: String::from("input.log"),
+            display_data: String::from("true"),
+            display_info: String::from("true"),
+        }
+    }
+}
 pub fn parse_duration(expiration: &str) -> u64 {
     let mut total_seconds = 0;
     let mut number = String::new();

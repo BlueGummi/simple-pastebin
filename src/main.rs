@@ -11,11 +11,20 @@ use tokio::{sync::mpsc, task, time};
 
 mod config;
 
-fn declare_config() -> Config {
-    let config_content = fs::read_to_string("config.toml")
-        .expect("Failed to read config.toml");
-    toml::de::from_str(&config_content)
-        .expect("Failed to parse config.toml")
+pub fn declare_config() -> Config {
+    let config_content = match fs::read_to_string("config.toml") {
+        Ok(content) => content,
+        Err(_) => {
+            return Config::default(); 
+        }
+    };
+
+    match toml::de::from_str::<Config>(&config_content) {
+        Ok(config) => config, 
+        Err(_) => {
+            Config::default() // return default config if parsing fails
+        },
+    }
 }
 
 async fn clear_file_after_duration(file_path: &str, duration: Duration) {

@@ -155,88 +155,88 @@
     </div>
 
     <script>
-        let fileName;
+	    let fileName;
 
-        // Theme changer
-        document.getElementById('themeToggle').addEventListener('click', () => {
-            let currentTheme = document.body.className;
-            document.body.className = currentTheme === 'light' ? 'dark' : 'light';
+    // Theme changer
+    document.getElementById('themeToggle').addEventListener('click', () => {
+        let currentTheme = document.body.className;
+        document.body.className = currentTheme === 'light' ? 'dark' : 'light';
+    });
+
+    // Load the expiration value and log name from config.toml
+    async function loadConfig() {
+        try {
+            let response = await fetch('config.toml');
+            if (!response.ok) throw new Error('Network response was not ok');
+            let text = await response.text();
+            let expirationValue = parseExpiration(text);
+            displayExpirationMessage(expirationValue);
+            fileName = parseFileName(text);
+        } catch (error) {
+            document.getElementById('expirationMessage').textContent = 'Error loading expiration';
+        }
+    }
+
+    function parseFileName(tomlText) {
+        const logNameMatch = tomlText.match(/log_name\s*=\s*"(.*?)"/);
+        return logNameMatch ? removeQuotes(logNameMatch[1]) : ''; // Get log_name value
+    }
+
+    function removeQuotes(text) {
+        return text.replace(/^"|"$/g, '');
+    }
+
+    function parseExpiration(tomlText) {
+        const expirationMatch = tomlText.match(/expiration\s*=\s*"(.*?)"/);
+        return expirationMatch ? expirationMatch[1] : ''; // Get expiration value
+    }
+
+    function displayExpirationMessage(expirationValue) {
+        const timeUnits = { d: 'day', h: 'hour', m: 'minute', s: 'second' };
+        const parts = expirationValue.match(/(\d+)([dhms])/g) || [];
+        const formattedParts = parts.map(part => {
+            const value = part.slice(0, -1);
+            const unit = part.slice(-1);
+            const pluralizedUnit = timeUnits[unit] + (value > 1 ? 's' : '');
+            return `${value} ${pluralizedUnit}`;
         });
+        document.getElementById('expirationMessage').textContent = ` (Clears every ${formattedParts.join(', ')})`;
+    }
 
-        // Load the expiration value from config.toml
-        async function loadConfig() {
-            try {
-                let response = await fetch('config.toml');
-                if (!response.ok) throw new Error('Network response was not ok');
-                let text = await response.text();
-                let expirationLine = parseExpiration(text);
-                displayExpirationMessage(expirationLine);
-                fileName = parseFileName(text);
-            } catch (error) {
-                document.getElementById('expirationMessage').textContent = 'Error loading expiration';
+    // Load log
+    async function loadLog() {
+        try {
+            let response = await fetch(fileName);
+            if (!response.ok) throw new Error('Network response was not ok');
+            let text = await response.text();
+            parseLogData(text);
+        } catch (error) {
+            document.getElementById('fileContent').textContent = 'Error loading log';
+            document.getElementById('timestamps').textContent = '';
+        }
+    }
+
+    // Parse log data
+    function parseLogData(data) {
+        let lines = data.split('\n');
+        let timestamps = [];
+        let content = [];
+        let timestampRegex = /^\d{2}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2} (AM|PM) \|: /;
+        lines.forEach(line => {
+            let match = timestampRegex.exec(line);
+            if (match) {
+                let timestamp = line.substring(0, match[0].length - 3).trim();
+                let contentText = line.substring(match[0].length).trim();
+                timestamps.push(timestamp);
+                content.push(contentText);
+            } else {
+                timestamps.push('');
+                content.push(line);
             }
-        }
-
-        function parseFileName(tomlText) {
-            return removeQuotes(tomlText.split('log_name =')[1].trim());
-        }
-
-        function removeQuotes(text) {
-            return text.replace(/^"|"$/g, '');
-        }
-
-        function parseExpiration(tomlText) {
-            let expirationMatch = tomlText.match(/expiration\s*=\s*".*?"/);
-            return expirationMatch ? expirationMatch[0] : '';
-        }
-
-        function displayExpirationMessage(expirationLine) {
-            const expirationValue = expirationLine.match(/"(.+?)"/)[1];
-            const timeUnits = { d: 'day', h: 'hour', m: 'minute', s: 'second' };
-            const parts = expirationValue.match(/(\d+)([dhms])/g) || [];
-            const formattedParts = parts.map(part => {
-                const value = part.slice(0, -1);
-                const unit = part.slice(-1);
-                const pluralizedUnit = timeUnits[unit] + (value > 1 ? 's' : '');
-                return `${value} ${pluralizedUnit}`;
-            });
-            document.getElementById('expirationMessage').textContent = ` (Clears every ${formattedParts.join(', ')})`;
-        }
-
-        // Load log
-        async function loadLog() {
-            try {
-                let response = await fetch(fileName);
-                if (!response.ok) throw new Error('Network response was not ok');
-                let text = await response.text();
-                parseLogData(text);
-            } catch (error) {
-                document.getElementById('fileContent').textContent = 'Error loading log';
-                document.getElementById('timestamps').textContent = '';
-            }
-        }
-
-        // Parse log data
-        function parseLogData(data) {
-            let lines = data.split('\n');
-            let timestamps = [];
-            let content = [];
-            let timestampRegex = /^\d{2}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2} (AM|PM) \|: /;
-            lines.forEach(line => {
-                let match = timestampRegex.exec(line);
-                if (match) {
-                    let timestamp = line.substring(0, match[0].length - 3).trim();
-                    let contentText = line.substring(match[0].length).trim();
-                    timestamps.push(timestamp);
-                    content.push(contentText);
-                } else {
-                    timestamps.push('');
-                    content.push(line);
-                }
-            });
-            document.getElementById('timestamps').textContent = timestamps.join('\n');
-            document.getElementById('fileContent').textContent = content.join('\n');
-        }
+        });
+        document.getElementById('timestamps').textContent = timestamps.join('\n');
+        document.getElementById('fileContent').textContent = content.join('\n');
+    }
 
         function downloadLog() {
             fetch(fileName)

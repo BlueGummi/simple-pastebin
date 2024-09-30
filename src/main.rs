@@ -41,9 +41,9 @@ async fn main() {
     let total_duration = Duration::from_secs(config::parse_duration(&config.expiration));
 
     // spawn a task to clear the file after the specified duration
-    let logname = config.logname.trim().to_string();
+    let log_name = config.log_name.trim().to_string();
     tokio::spawn(async move {
-        clear_file_after_duration(&logname, total_duration).await;
+        clear_file_after_duration(&log_name, total_duration).await;
     });
 
     server().await;
@@ -54,12 +54,14 @@ async fn server() {
     let router: Router = Router::new()
         .route("/", post(write_to_file))
         .route("/", get(serve_form))
-        .route(&(format!("/{}", config.logname.trim())), get(serve_log))
+        .route(&(format!("/{}", config.log_name.trim())), get(serve_log))
         .route("/clear", post(clear_log))
         .route("/config.toml", get(serve_config));
     
     let listener = tokio::net::TcpListener::bind(format!("{}:{}", config.address.trim(), config.port.trim())).await.unwrap();
-    println!("Server listening on {}:{}", config.address.trim(), config.port.trim());
+    if config.display_data == "true" {
+        println!("Server listening on {}:{}", config.address.trim(), config.port.trim());
+    }
 
     axum::serve(listener, router).await.unwrap();
 
@@ -74,11 +76,11 @@ async fn server() {
 async fn write_to_file(body: String) {
     let config = declare_config();
     let data = format!("{} |: {}", Local::now().format("%D %I:%M:%S %p").to_string(), body);
-    println!("{}", data);
+//    println!("{}", data);
     let mut file = OpenOptions::new()
         .append(true)
         .create(true)
-        .open(format!("{}", config.logname.trim()))
+        .open(format!("{}", config.log_name.trim()))
         .unwrap();
     
     if let Err(e) = writeln!(file, "{}", data) {
@@ -88,7 +90,7 @@ async fn write_to_file(body: String) {
 
 async fn clear_log() -> impl IntoResponse {
     let config = declare_config();
-    if let Err(e) = fs::write(format!("{}", config.logname.trim()), "") {
+    if let Err(e) = fs::write(format!("{}", config.log_name.trim()), "") {
         eprintln!("Error clearing log file: {}", e);
         return "Error clearing log file".into_response();
     }
@@ -105,7 +107,7 @@ async fn serve_form() -> Html<String> {
 
 async fn serve_log() -> impl IntoResponse {
     let config = declare_config();
-    match fs::read_to_string(format!("{}", config.logname.trim())) {
+    match fs::read_to_string(format!("{}", config.log_name.trim())) {
         Ok(content) => content,
         Err(_) => "Error reading log file".to_string(),
     }

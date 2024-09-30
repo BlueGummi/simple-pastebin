@@ -13,7 +13,7 @@ Format the expiration like this
 
 "2d6h2m3s"
 
-There is also a 'logname' variable that allows changing of the log name.
+There is also a 'log_name' variable that allows changing of the log name.
 It also has to be a string, like this
 
 "input.txt"

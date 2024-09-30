@@ -1,4 +1,5 @@
 address = "127.0.0.1"
-port = "5050"
-expiration = "1m"
-logname = "input.log"
+port = "6060"
+expiration = "10m"
+log_name = "input.log"
+display_data = "true"

@@ -1,315 +1,315 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Pastebin</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            white-space: pre-wrap;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            transition: background-color 0.5s, color 0.5s;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simple Pastebin</title>
+<style>
+body {
+	font-family: Arial, sans-serif;
+margin: 20px;
+	white-space: pre-wrap;
+display: flex;
+	 flex-direction: column;
+	 align-items: center;
+transition: background-color 0.5s, color 0.5s;
+}
 
-        body.light {
-            background-color: #ffffff;
-            color: #000000;
-        }
+body.light {
+	background-color: #ffffff;
+color: #000000;
+}
 
-        body.dark {
-            background-color: #222222;
-            color: #ffffff;
-        }
+body.dark {
+	background-color: #222222;
+color: #ffffff;
+}
 
-        .container {
-            display: flex;
-            width: 100%;
-            max-width: 800px;
-            overflow-x: auto;
-            position: relative;
-        }
+.container {
+display: flex;
+width: 100%;
+       max-width: 800px;
+       overflow-x: auto;
+position: relative;
+}
 
-        .timestamps, .data {
-            background-color: #f4f4f4;
-            border: 1px solid #ddd;
-            padding: 10px;
-            flex: 1;
-            overflow-x: auto;
-            font-size: 16px;
-            min-height: 3em;
-            transition: background-color 0.5s, color 0.5s;
-        }
+.timestamps, .data {
+	background-color: #f4f4f4;
+border: 1px solid #ddd;
+padding: 10px;
+flex: 1;
+      overflow-x: auto;
+      font-size: 16px;
+      min-height: 3em;
+transition: background-color 0.5s, color 0.5s;
+}
 
-        body.dark .timestamps, body.dark .data {
-            background-color: #333333;
-            color: #ffffff;
-        }
+body.dark .timestamps, body.dark .data {
+	background-color: #333333;
+color: #ffffff;
+}
 
-        #inputForm {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            max-width: 800px;
-            align-items: flex-start;
-            margin-bottom: 10px;
-        }
+#inputForm {
+display: flex;
+	 flex-direction: column;
+width: 100%;
+       max-width: 800px;
+       align-items: flex-start;
+       margin-bottom: 10px;
+}
 
-        #input {
-            width: 100%;
-            min-height: 30px;
-            padding: 10px;
-            box-sizing: border-box;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            font-size: 16px;
-        }
+#input {
+width: 100%;
+       min-height: 30px;
+padding: 10px;
+	 box-sizing: border-box;
+border: 1px solid #ddd;
+	border-radius: 5px;
+	margin-bottom: 10px;
+	font-size: 16px;
+}
 
-        #submitButton{
-            padding: 10px 20px;
-            border: none;
-            border-radius: 20px;
-            color: white;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 16px;
-            width: 100%;
-            max-width: 200px;
-            margin: 5px auto;
-        }
+#submitButton{
+padding: 10px 20px;
+border: none;
+	border-radius: 20px;
+color: white;
+cursor: pointer;
+	font-weight: bold;
+	font-size: 16px;
+width: 100%;
+       max-width: 200px;
+margin: 5px auto;
+}
 
-        #submitButton {
-            background-color: green;
-        }
+#submitButton {
+	background-color: green;
+}
 
-        #downloadButton {
-            background-color: blue;
-            padding: 7px 7px;
-            border: none;
-            border-radius: 20px;
-            color: white;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 13px;
-            width: 100%;
-            max-width: 100px;
-            margin: 5px auto;
-        }
+#downloadButton {
+	background-color: blue;
+padding: 7px 7px;
+border: none;
+	border-radius: 20px;
+color: white;
+cursor: pointer;
+	font-weight: bold;
+	font-size: 13px;
+width: 100%;
+       max-width: 100px;
+margin: 5px auto;
+}
 
-        #deleteButton {
-            padding: 5px 10px;
-            border: none;
-            border-radius: 10px;
-            color: white;
-            background-color: red;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
-            position: absolute;
-            top: 10px;
-            right: 10px;
-        }
+#deleteButton {
+padding: 5px 10px;
+border: none;
+	border-radius: 10px;
+color: white;
+       background-color: red;
+cursor: pointer;
+	font-weight: bold;
+	font-size: 14px;
+position: absolute;
+top: 10px;
+right: 10px;
+}
 
-        #themeToggle {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            cursor: pointer;
-            padding: 5px 10px;
-            border: none;
-            border-radius: 5px;
-            background-color: #ddd;
-            transition: background-color 0.3s;
-        }
+#themeToggle {
+position: absolute;
+top: 10px;
+right: 10px;
+cursor: pointer;
+padding: 5px 10px;
+border: none;
+	border-radius: 5px;
+	background-color: #ddd;
+transition: background-color 0.3s;
+}
 
-        h1 {
-            font-size: 20px;
-            margin-bottom: 5px;
-            text-align: center;
-        }
+h1 {
+	font-size: 20px;
+	margin-bottom: 5px;
+	text-align: center;
+}
 
-        #expirationMessage {
-            font-size: 16px;
-            margin-bottom: 20px;
-        }
-    </style>
+#expirationMessage {
+	font-size: 16px;
+	margin-bottom: 20px;
+}
+</style>
 </head>
 <body class="light">
-    <button id="themeToggle">Toggle Theme</button>
-    <form id="inputForm">
-        <textarea id="input" name="input" required rows="1" oninput="autoResize(this)" placeholder="Type your paste here..."></textarea>
-        <br>
-        <input type="submit" id="submitButton" value="Submit">
-    </form>
-    <h1>Current Pastebin</h1>
-    <div id="expirationMessage">(Clears every X)</div>
-    <button id="downloadButton">Download</button> 
-    <div class="container">
-        <button id="deleteButton">Delete</button>
-        <div class="timestamps" id="timestamps">Loading...</div>
-        <div class="data" id="fileContent">Loading...</div>
-    </div>
+<button id="themeToggle">Toggle Theme</button>
+<form id="inputForm">
+<textarea id="input" name="input" required rows="1" oninput="autoResize(this)" placeholder="Type your paste here..."></textarea>
+<br>
+<input type="submit" id="submitButton" value="Submit">
+</form>
+<h1>Current Pastebin</h1>
+<div id="expirationMessage">(Clears every X)</div>
+<button id="downloadButton">Download</button> 
+<div class="container">
+<button id="deleteButton">Delete</button>
+<div class="timestamps" id="timestamps">Loading...</div>
+<div class="data" id="fileContent">Loading...</div>
+</div>
 
-    <script>
-	    let fileName;
+<script>
+let fileName;
 
-    // Theme changer
-    document.getElementById('themeToggle').addEventListener('click', () => {
-        let currentTheme = document.body.className;
-        document.body.className = currentTheme === 'light' ? 'dark' : 'light';
-    });
+// Theme changer
+document.getElementById('themeToggle').addEventListener('click', () => {
+		let currentTheme = document.body.className;
+		document.body.className = currentTheme === 'light' ? 'dark' : 'light';
+		});
 
-    // Load the expiration value and log name from config.toml
-    async function loadConfig() {
-        try {
-            let response = await fetch('config.toml');
-            if (!response.ok) throw new Error('Network response was not ok');
-            let text = await response.text();
-            let expirationValue = parseExpiration(text);
-            displayExpirationMessage(expirationValue);
-            fileName = parseFileName(text);
-        } catch (error) {
-            document.getElementById('expirationMessage').textContent = 'Error loading expiration';
-        }
-    }
+// Load the expiration value and log name from config.toml
+async function loadConfig() {
+	try {
+		let response = await fetch('config.toml');
+		if (!response.ok) throw new Error('Network response was not ok');
+		let text = await response.text();
+		let expirationValue = parseExpiration(text);
+		displayExpirationMessage(expirationValue);
+		fileName = parseFileName(text);
+	} catch (error) {
+		document.getElementById('expirationMessage').textContent = 'Error loading expiration';
+	}
+}
 
-    function parseFileName(tomlText) {
-        const logNameMatch = tomlText.match(/log_name\s*=\s*"(.*?)"/);
-        return logNameMatch ? removeQuotes(logNameMatch[1]) : ''; // Get log_name value
-    }
+function parseFileName(tomlText) {
+	const logNameMatch = tomlText.match(/log_name\s*=\s*"(.*?)"/);
+	return logNameMatch ? removeQuotes(logNameMatch[1]) : ''; // Get log_name value
+}
 
-    function removeQuotes(text) {
-        return text.replace(/^"|"$/g, '');
-    }
+function removeQuotes(text) {
+	return text.replace(/^"|"$/g, '');
+}
 
-    function parseExpiration(tomlText) {
-        const expirationMatch = tomlText.match(/expiration\s*=\s*"(.*?)"/);
-        return expirationMatch ? expirationMatch[1] : ''; // Get expiration value
-    }
+function parseExpiration(tomlText) {
+	const expirationMatch = tomlText.match(/expiration\s*=\s*"(.*?)"/);
+	return expirationMatch ? expirationMatch[1] : ''; // Get expiration value
+}
 
-    function displayExpirationMessage(expirationValue) {
-        const timeUnits = { d: 'day', h: 'hour', m: 'minute', s: 'second' };
-        const parts = expirationValue.match(/(\d+)([dhms])/g) || [];
-        const formattedParts = parts.map(part => {
-            const value = part.slice(0, -1);
-            const unit = part.slice(-1);
-            const pluralizedUnit = timeUnits[unit] + (value > 1 ? 's' : '');
-            return `${value} ${pluralizedUnit}`;
-        });
-        document.getElementById('expirationMessage').textContent = ` (Clears every ${formattedParts.join(', ')})`;
-    }
+function displayExpirationMessage(expirationValue) {
+	const timeUnits = { d: 'day', h: 'hour', m: 'minute', s: 'second' };
+	const parts = expirationValue.match(/(\d+)([dhms])/g) || [];
+	const formattedParts = parts.map(part => {
+			const value = part.slice(0, -1);
+			const unit = part.slice(-1);
+			const pluralizedUnit = timeUnits[unit] + (value > 1 ? 's' : '');
+			return `${value} ${pluralizedUnit}`;
+			});
+	document.getElementById('expirationMessage').textContent = ` (Clears every ${formattedParts.join(', ')})`;
+}
 
-    // Load log
-    async function loadLog() {
-        try {
-            let response = await fetch(fileName);
-            if (!response.ok) throw new Error('Network response was not ok');
-            let text = await response.text();
-            parseLogData(text);
-        } catch (error) {
-            document.getElementById('fileContent').textContent = 'Error loading log';
-            document.getElementById('timestamps').textContent = '';
-        }
-    }
+// Load log
+async function loadLog() {
+	try {
+		let response = await fetch(fileName);
+		if (!response.ok) throw new Error('Network response was not ok');
+		let text = await response.text();
+		parseLogData(text);
+	} catch (error) {
+		document.getElementById('fileContent').textContent = 'Error loading log';
+		document.getElementById('timestamps').textContent = '';
+	}
+}
 
-    // Parse log data
-    function parseLogData(data) {
-        let lines = data.split('\n');
-        let timestamps = [];
-        let content = [];
-        let timestampRegex = /^\d{2}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2} (AM|PM) \|: /;
-        lines.forEach(line => {
-            let match = timestampRegex.exec(line);
-            if (match) {
-                let timestamp = line.substring(0, match[0].length - 3).trim();
-                let contentText = line.substring(match[0].length).trim();
-                timestamps.push(timestamp);
-                content.push(contentText);
-            } else {
-                timestamps.push('');
-                content.push(line);
-            }
-        });
-        document.getElementById('timestamps').textContent = timestamps.join('\n');
-        document.getElementById('fileContent').textContent = content.join('\n');
-    }
+// Parse log data
+function parseLogData(data) {
+	let lines = data.split('\n');
+	let timestamps = [];
+	let content = [];
+	let timestampRegex = /^\d{2}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2} (AM|PM) \|: /;
+	lines.forEach(line => {
+			let match = timestampRegex.exec(line);
+			if (match) {
+			let timestamp = line.substring(0, match[0].length - 3).trim();
+			let contentText = line.substring(match[0].length).trim();
+			timestamps.push(timestamp);
+			content.push(contentText);
+			} else {
+			timestamps.push('');
+			content.push(line);
+			}
+			});
+	document.getElementById('timestamps').textContent = timestamps.join('\n');
+	document.getElementById('fileContent').textContent = content.join('\n');
+}
 
-        function downloadLog() {
-            fetch(fileName)
-                .then(response => response.blob())
-                .then(blob => {
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = fileName; 
-                    document.body.appendChild(a);
-                    a.click();
-                    a.remove();
-                    URL.revokeObjectURL(url);
-                })
-                .catch(error => console.error('Error downloading log:', error));
-        }
+function downloadLog() {
+	fetch(fileName)
+		.then(response => response.blob())
+		.then(blob => {
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = fileName; 
+				document.body.appendChild(a);
+				a.click();
+				a.remove();
+				URL.revokeObjectURL(url);
+				})
+	.catch(error => console.error('Error downloading log:', error));
+}
 
-        // Delete button
-        async function deleteLog() {
-            let confirmation = confirm("Are you sure you want to delete the whole pastebin?");
-            if (confirmation) {
-                try {
-                    let response = await fetch('/clear', { method: 'POST' });
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    loadLog();
-                } catch (error) {
-                    console.error('Error clearing log:', error);
-                }
-            }
-        }
+// Delete button
+async function deleteLog() {
+	let confirmation = confirm("Are you sure you want to delete the whole pastebin?");
+	if (confirmation) {
+		try {
+			let response = await fetch('/clear', { method: 'POST' });
+			if (!response.ok) throw new Error('Network response was not ok');
+			loadLog();
+		} catch (error) {
+			console.error('Error clearing log:', error);
+		}
+	}
+}
 
-        document.getElementById('deleteButton').addEventListener('click', deleteLog);
-        document.getElementById('downloadButton').addEventListener('click', downloadLog); 
+document.getElementById('deleteButton').addEventListener('click', deleteLog);
+document.getElementById('downloadButton').addEventListener('click', downloadLog); 
 
-        function autoResize(textarea) {
-            textarea.style.height = 'auto';
-            textarea.style.height = textarea.scrollHeight + 'px';
-        }
+function autoResize(textarea) {
+	textarea.style.height = 'auto';
+	textarea.style.height = textarea.scrollHeight + 'px';
+}
 
-        // Network stuff
-        document.getElementById('inputForm').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            let inputData = document.getElementById('input').value;
-            if (inputData) {
-                try {
-                    let response = await fetch('/', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'text/plain' },
-                        body: inputData
-                    });
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    document.getElementById('input').value = '';
-                    autoResize(document.getElementById('input'));
-                    loadLog();
-                } catch (error) {
-                    console.error('Error submitting data:', error);
-                }
-            }
-        });
+// Network stuff
+document.getElementById('inputForm').addEventListener('submit', async (event) => {
+		event.preventDefault();
+		let inputData = document.getElementById('input').value;
+		if (inputData) {
+		try {
+		let response = await fetch('/', {
+method: 'POST',
+headers: { 'Content-Type': 'text/plain' },
+body: inputData
+});
+		if (!response.ok) throw new Error('Network response was not ok');
+		document.getElementById('input').value = '';
+		autoResize(document.getElementById('input'));
+		loadLog();
+		} catch (error) {
+		console.error('Error submitting data:', error);
+		}
+		}
+		});
 
-        document.getElementById('input').addEventListener('keydown', function(event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                document.getElementById('inputForm').dispatchEvent(new Event('submit'));
-            }
-        });
+document.getElementById('input').addEventListener('keydown', function(event) {
+		if (event.key === 'Enter' && !event.shiftKey) {
+		event.preventDefault();
+		document.getElementById('inputForm').dispatchEvent(new Event('submit'));
+		}
+		});
 
-        window.onload = () => {
-            loadConfig(); // Load the configuration
-            loadLog(); // Load the log
-        };
+window.onload = () => {
+	loadConfig(); // Load the configuration
+	loadLog(); // Load the log
+};
 
-        setInterval(loadLog, 500);
-    </script>
+setInterval(loadLog, 500);
+</script>
 </body>
 </html>

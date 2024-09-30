@@ -18,6 +18,11 @@ It also has to be a string, like this
 
 "input.txt"
 
+The 'display_data' field can be used to toggle whether or not the data received by the server will be printed.
+If "true", data will be printed. All other options will not print anything.
+
+
+
 ``cargo run --release``
 
 navigate to the IP address and port in your browser

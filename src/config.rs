@@ -7,6 +7,7 @@ pub struct Config {
     pub expiration: String,
     pub log_name: String,
     pub display_data: String,
+    pub display_info: String,
 }
 
 pub fn parse_duration(expiration: &str) -> u64 {

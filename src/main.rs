@@ -59,7 +59,7 @@ async fn server() {
         .route("/config.toml", get(serve_config));
     
     let listener = tokio::net::TcpListener::bind(format!("{}:{}", config.address.trim(), config.port.trim())).await.unwrap();
-    if config.display_data == "true" {
+    if config.display_info == "true" {
         println!("Server listening on {}:{}", config.address.trim(), config.port.trim());
     }
 
@@ -76,7 +76,9 @@ async fn server() {
 async fn write_to_file(body: String) {
     let config = declare_config();
     let data = format!("{} |: {}", Local::now().format("%D %I:%M:%S %p").to_string(), body);
-//    println!("{}", data);
+    if config.display_data == "true" {
+    println!("{}", data);
+    }
     let mut file = OpenOptions::new()
         .append(true)
         .create(true)

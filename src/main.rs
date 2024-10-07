@@ -7,8 +7,8 @@ use chrono::Local;
 use config::Config;
 use std::{fs, fs::OpenOptions, io::Write};
 use std::time::{Duration, Instant};
-use tokio::{sync::mpsc, task, time};
-
+use tokio::{sync::Notify, time};
+use std::sync::Arc;
 mod config;
 
 pub fn declare_config() -> Config {
@@ -71,15 +71,26 @@ async fn server() {
     if config.display_info == "true" {
         println!("Server listening on {}:{}", config.address.trim(), config.port.trim());
     }
+    let notify = Arc::new(Notify::new());
+    let notify_clone = notify.clone();
 
-    axum::serve(listener, router).await.unwrap();
-
-    let (_, mut rx) = mpsc::unbounded_channel();
-    task::spawn(async move {
-        while let Some(body) = rx.recv().await {
-            write_to_file(body).await;
-        }
+    println!("Press Ctrl-C to exit.");
+    // spawn a task to listen for Ctrl-C
+    tokio::spawn(async move {
+        tokio::signal::ctrl_c()
+            .await
+            .expect("Failed to install Ctrl+C handler");
+        notify_clone.notify_one();
     });
+    // Start the server
+    let server_task = tokio::spawn(async move {
+        axum::serve(listener, router).await.unwrap();
+    });
+    // wait for the shutdown signal
+    notify.notified().await;
+    println!("Shutting down...");
+    let _ = server_task.abort();
+    let _ = server_task.await;
 }
 
 async fn write_to_file(body: String) {

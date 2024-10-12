@@ -1,42 +1,38 @@
 use axum::{
-    routing::{get, post},
     response::{Html, IntoResponse},
+    routing::{get, post},
     Router,
 };
 use chrono::Local;
 use config::Config;
-use std::{fs, fs::OpenOptions, io::Write};
-use std::time::{Duration, Instant};
-use tokio::{sync::Notify, time};
 use std::sync::Arc;
+use std::time::{Duration, Instant};
+use std::{fs, fs::OpenOptions, io::Write};
+use tokio::{sync::Notify, time};
 mod config;
 
 pub fn declare_config() -> Config {
     let config_content = match fs::read_to_string("config.toml") {
         Ok(content) => content,
         Err(_) => {
-            return Config::default(); 
+            return Config::default();
         }
     };
 
-    match toml::de::from_str::<Config>(&config_content) {
-        Ok(config) => config, 
-        Err(_) => {
-            Config::default() // return default config if parsing fails
-        },
-    }
+    toml::de::from_str::<Config>(&config_content).unwrap_or_default()
 }
 
 async fn clear_file_after_duration(file_path: &str, duration: Duration) {
     loop {
         let start_time = Instant::now();
         time::sleep(duration).await;
-        
+
         if let Err(e) = OpenOptions::new()
             .write(true)
             .truncate(true)
-            .open(&file_path)
-            .and_then(|mut file| file.write_all(b"")) {
+            .open(file_path)
+            .and_then(|mut file| file.write_all(b""))
+        {
             eprintln!("Failed to clear file: {}", e);
         } else {
             println!("File cleared after {:?}", start_time.elapsed());
@@ -66,10 +62,17 @@ async fn server() {
         .route(&(format!("/{}", config.log_name.trim())), get(serve_log))
         .route("/clear", post(clear_log))
         .route("/config.toml", get(serve_config));
-    
-    let listener = tokio::net::TcpListener::bind(format!("{}:{}", config.address.trim(), config.port.trim())).await.unwrap();
+
+    let listener =
+        tokio::net::TcpListener::bind(format!("{}:{}", config.address.trim(), config.port.trim()))
+            .await
+            .unwrap();
     if config.display_info == "true" {
-        println!("Server listening on {}:{}", config.address.trim(), config.port.trim());
+        println!(
+            "Server listening on {}:{}",
+            config.address.trim(),
+            config.port.trim()
+        );
     }
     let notify = Arc::new(Notify::new());
     let notify_clone = notify.clone();
@@ -90,22 +93,22 @@ async fn server() {
     // wait for the shutdown signal
     notify.notified().await;
     println!("Shutting down...");
-    let _ = server_task.abort();
+    server_task.abort();
     let _ = server_task.await;
 }
 
 async fn write_to_file(body: String) {
     let config = declare_config();
-    let data = format!("{} |: {}", Local::now().format("%D %I:%M:%S %p").to_string(), body);
+    let data = format!("{} |: {}", Local::now().format("%D %I:%M:%S %p"), body);
     if config.display_data == "true" {
-    println!("{}", data);
+        println!("{}", data);
     }
     let mut file = OpenOptions::new()
         .append(true)
         .create(true)
-        .open(format!("{}", config.log_name.trim()))
+        .open(config.log_name.trim())
         .unwrap();
-    
+
     if let Err(e) = writeln!(file, "{}", data) {
         eprintln!("Couldn't write to file: {}", e);
     }
@@ -113,7 +116,7 @@ async fn write_to_file(body: String) {
 
 async fn clear_log() -> impl IntoResponse {
     let config = declare_config();
-    if let Err(e) = fs::write(format!("{}", config.log_name.trim()), "") {
+    if let Err(e) = fs::write(config.log_name.trim(), "") {
         eprintln!("Error clearing log file: {}", e);
         return "Error clearing log file".into_response();
     }
@@ -122,15 +125,14 @@ async fn clear_log() -> impl IntoResponse {
 }
 
 async fn serve_form() -> Html<String> {
-    let content = fs::read_to_string("index.html").unwrap_or_else(|_| {
-        "Error loading HTML file".to_string()
-    });
+    let content =
+        fs::read_to_string("index.html").unwrap_or_else(|_| "Error loading HTML file".to_string());
     Html(content)
 }
 
 async fn serve_log() -> impl IntoResponse {
     let config = declare_config();
-    match fs::read_to_string(format!("{}", config.log_name.trim())) {
+    match fs::read_to_string(config.log_name.trim()) {
         Ok(content) => content,
         Err(_) => "Error reading log file".to_string(),
     }

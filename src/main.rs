@@ -75,6 +75,7 @@ async fn server() {
     let notify_clone = notify.clone();
 
     println!("Press Ctrl-C to exit.");
+    println!("File automatically clears after {}", config.expiration);
     // spawn a task to listen for Ctrl-C
     tokio::spawn(async move {
         tokio::signal::ctrl_c()

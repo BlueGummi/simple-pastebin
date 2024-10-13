@@ -7,6 +7,8 @@ A simple pastebin server, with a backend written in Rust  🚀 🚀 🚀
 
 ``cd simple-pastebin``
 
+If **any** fields are missing in config.toml, all values will default. This is a FEATURE, not a BUG (trust me).
+
 Edit config.toml with the editor of choice, it currently supports a port IP address, and a time to automatically clear the log file.
 Port, IP address, and expiration in config.toml must be strings
 Format the expiration like this
@@ -20,7 +22,6 @@ It also has to be a string, like this
 
 The 'display_data' field can be used to toggle whether or not the data received by the server will be printed.
 If "true", data will be printed. All other options will not print anything.
-
 
 
 ``cargo run --release``

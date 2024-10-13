@@ -8,7 +8,7 @@ use config::Config;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use std::{fs, fs::OpenOptions, io::Write};
-use tokio::{sync::Notify, time};
+use tokio::{sync::Notify, time, signal};
 mod config;
 
 pub fn declare_config() -> Config {
@@ -63,10 +63,14 @@ async fn server() {
         .route("/clear", post(clear_log))
         .route("/config.toml", get(serve_config));
 
-    let listener =
-        tokio::net::TcpListener::bind(format!("{}:{}", config.address.trim(), config.port.trim()))
-            .await
-            .unwrap();
+    let listener = tokio::net::TcpListener::bind(format!(
+        "{}:{}",
+        config.address.trim(),
+        config.port.trim()
+    ))
+    .await
+    .unwrap();
+
     if config.display_info == "true" {
         println!(
             "Server listening on {}:{}",
@@ -74,24 +78,19 @@ async fn server() {
             config.port.trim()
         );
     }
-    let notify = Arc::new(Notify::new());
-    let notify_clone = notify.clone();
 
     println!("Press Ctrl-C to exit.");
     println!("File automatically clears after {}", config.expiration);
-    // spawn a task to listen for Ctrl-C
-    tokio::spawn(async move {
-        tokio::signal::ctrl_c()
-            .await
-            .expect("Failed to install Ctrl+C handler");
-        notify_clone.notify_one();
-    });
+
     // Start the server
-    let server_task = tokio::spawn(async move {
-        axum::serve(listener, router).await.unwrap();
+    let server_task = tokio::spawn({
+        async move {
+            axum::serve(listener, router).await.unwrap();
+        }
     });
-    // wait for the shutdown signal
-    notify.notified().await;
+
+    // Wait for the shutdown signal
+    signal::ctrl_c().await.expect("failed to listen for event");
     println!("Shutting down...");
     server_task.abort();
     let _ = server_task.await;

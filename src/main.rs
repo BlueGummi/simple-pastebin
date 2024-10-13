@@ -65,16 +65,16 @@ async fn server() {
     let listener = tokio::net::TcpListener::bind(format!(
         "{}:{}",
         config.address.trim(),
-        config.port.trim()
+        config.port
     ))
     .await
     .unwrap();
 
-    if config.display_info == "true" {
+    if config.display_info {
         println!(
             "Server listening on {}:{}",
             config.address.trim(),
-            config.port.trim()
+            config.port
         );
     }
 
@@ -98,7 +98,7 @@ async fn server() {
 async fn write_to_file(body: String) {
     let config = declare_config();
     let data = format!("{} |: {}", Local::now().format("%D %I:%M:%S %p"), body);
-    if config.display_data == "true" {
+    if config.display_data {
         println!("{}", data);
     }
     let mut file = OpenOptions::new()

@@ -3,21 +3,21 @@ use serde::Deserialize;
 #[derive(Debug, Deserialize)]
 pub struct Config {
     pub address: String,
-    pub port: String,
+    pub port: u16,
     pub expiration: String,
     pub log_name: String,
-    pub display_data: String,
-    pub display_info: String,
+    pub display_data: bool,
+    pub display_info: bool,
 }
 impl Default for Config {
     fn default() -> Self {
         Config {
             address: String::from("127.0.0.1"),
-            port: String::from("6060"),
+            port: 6060,
             expiration: String::from("10m"),
             log_name: String::from("input.log"),
-            display_data: String::from("true"),
-            display_info: String::from("true"),
+            display_data: true,
+            display_info: true,
         }
     }
 }

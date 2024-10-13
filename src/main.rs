@@ -7,7 +7,7 @@ use chrono::Local;
 use config::Config;
 use std::time::{Duration, Instant};
 use std::{fs, fs::OpenOptions, io::Write};
-use tokio::{time, signal};
+use tokio::{signal, time};
 mod config;
 
 pub fn declare_config() -> Config {
@@ -18,7 +18,30 @@ pub fn declare_config() -> Config {
         }
     };
 
-    toml::de::from_str::<Config>(&config_content).unwrap_or_default()
+    // Deserialize the TOML content into a Config struct
+    let mut config: Config = toml::de::from_str::<Config>(&config_content).unwrap_or_default();
+
+    // Check each field and replace with default if empty
+    if config.address.is_empty() {
+        config.address = String::from("127.0.0.1");
+    }
+    if config.port == 0 {
+        config.port = 6060;
+    }
+    if config.expiration.is_empty() {
+        config.expiration = String::from("10m");
+    }
+    if config.log_name.is_empty() {
+        config.log_name = String::from("input.log");
+    }
+    if !config.display_data {
+        config.display_data = true; // Default value
+    }
+    if !config.display_info {
+        config.display_info = true; // Default value
+    }
+
+    config
 }
 
 async fn clear_file_after_duration(file_path: &str, duration: Duration) {
@@ -62,13 +85,10 @@ async fn server() {
         .route("/clear", post(clear_log))
         .route("/config.toml", get(serve_config));
 
-    let listener = tokio::net::TcpListener::bind(format!(
-        "{}:{}",
-        config.address.trim(),
-        config.port
-    ))
-    .await
-    .unwrap();
+    let listener =
+        tokio::net::TcpListener::bind(format!("{}:{}", config.address.trim(), config.port))
+            .await
+            .unwrap();
 
     if config.display_info {
         println!(

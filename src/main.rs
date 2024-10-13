@@ -5,10 +5,9 @@ use axum::{
 };
 use chrono::Local;
 use config::Config;
-use std::sync::Arc;
 use std::time::{Duration, Instant};
 use std::{fs, fs::OpenOptions, io::Write};
-use tokio::{sync::Notify, time, signal};
+use tokio::{time, signal};
 mod config;
 
 pub fn declare_config() -> Config {

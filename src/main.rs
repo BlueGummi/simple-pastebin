@@ -78,17 +78,19 @@ async fn main() {
 
 async fn server() {
     let config = declare_config();
-    let router: Router = Router::new()
+    let mut router = Router::new()
         .route("/", post(write_to_file))
         .route("/", get(serve_form))
-        .route(&(format!("/{}", config.log_name.trim())), get(serve_log))
         .route("/clear", post(clear_log))
         .route("/config.toml", get(serve_config));
 
-    let listener =
-        tokio::net::TcpListener::bind(format!("{}:{}", config.address.trim(), config.port))
-            .await
-            .unwrap();
+    if !config.void_mode {
+        router = router.route(&(format!("/{}", config.log_name.trim())), get(serve_log));
+    }
+
+    let listener = tokio::net::TcpListener::bind(format!("{}:{}", config.address.trim(), config.port))
+        .await
+        .unwrap();
 
     if config.display_info {
         println!(
@@ -97,11 +99,8 @@ async fn server() {
             config.port
         );
     }
-
     println!("Press Ctrl-C to exit.");
     println!("File automatically clears after {}", config.expiration);
-
-    // Start the server
     let server_task = tokio::spawn({
         async move {
             axum::serve(listener, router).await.unwrap();

@@ -8,6 +8,7 @@ pub struct Config {
     pub log_name: String,
     pub display_data: bool,
     pub display_info: bool,
+    pub void_mode: bool,
 }
 impl Default for Config {
     fn default() -> Self {
@@ -18,6 +19,7 @@ impl Default for Config {
             log_name: String::from("input.log"),
             display_data: true,
             display_info: true,
+            void_mode: false,
         }
     }
 }

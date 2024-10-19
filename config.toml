@@ -1,6 +1,7 @@
 address = "127.0.0.1"
-port = "6060"
-expiration = "10s"
+port = 6060
+expiration = "5s"
 log_name = "input.log"
-display_data = "true"
-display_info = "true"
+display_data = true
+display_info = true
+void_mode = true

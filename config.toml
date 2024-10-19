@@ -4,4 +4,4 @@ expiration = "5s"
 log_name = "input.log"
 display_data = true
 display_info = true
-void_mode = true
+void_mode = false

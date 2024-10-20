@@ -9,6 +9,8 @@ pub struct Config {
     pub display_data: bool,
     pub display_info: bool,
     pub void_mode: bool,
+    pub history: bool,
+    pub history_log: String,
 }
 impl Default for Config {
     fn default() -> Self {
@@ -20,6 +22,8 @@ impl Default for Config {
             display_data: true,
             display_info: true,
             void_mode: false,
+            history: true,
+            history_log: String::from("history.log"),
         }
     }
 }

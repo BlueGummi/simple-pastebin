@@ -10,3 +10,5 @@ chrono = "0.4.38"
 toml = "0.8.19"
 serde = "1.0.210"
 config = "0.14.0"
+owo-colors = "3"
+

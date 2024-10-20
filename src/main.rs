@@ -9,6 +9,7 @@ use std::time::{Duration, Instant};
 use std::{fs, fs::OpenOptions, io::Write};
 use tokio::{signal, time};
 mod config;
+use owo_colors::OwoColorize;
 
 pub fn declare_config() -> Config {
     let config_content = match fs::read_to_string("config.toml") {
@@ -57,7 +58,7 @@ async fn clear_file_after_duration(file_path: &str, duration: Duration) {
         {
             eprintln!("Failed to clear file: {}", e);
         } else {
-            println!("File cleared after {:?}", start_time.elapsed());
+            println!("{} {} {:?}", "File cleared".green(), "after".blue(), start_time.elapsed().yellow());
         }
     }
 }
@@ -94,13 +95,15 @@ async fn server() {
 
     if config.display_info {
         println!(
-            "Server listening on {}:{}",
-            config.address.trim(),
-            config.port
+            "{} {} {}:{}",
+            "Server listening".green(),
+            "on".blue(),
+            config.address.trim().yellow(),
+            config.port.yellow()
         );
     }
-    println!("Press Ctrl-C to exit.");
-    println!("File automatically clears after {}", config.expiration);
+    println!("{}", "Press Ctrl-C to exit.".red());
+    println!("{} {} {}", "File automatically clears".green(), "after".blue(), config.expiration.yellow());
     let server_task = tokio::spawn({
         async move {
             axum::serve(listener, router).await.unwrap();
@@ -109,36 +112,45 @@ async fn server() {
 
     // Wait for the shutdown signal
     signal::ctrl_c().await.expect("failed to listen for event");
-    println!("Shutting down...");
+    println!("{}", "Shutting down...".red());
     server_task.abort();
     let _ = server_task.await;
 }
 
-async fn write_to_file(body: String) {
+async fn write_to_file(body: String) -> impl IntoResponse {
     let config = declare_config();
     let data = format!("{} |: {}", Local::now().format("%D %I:%M:%S %p"), body);
+
     if config.display_data {
-        println!("{}", data);
+        println!("{}", data.white());
     }
-    let mut file = OpenOptions::new()
+
+    match OpenOptions::new()
         .append(true)
         .create(true)
         .open(config.log_name.trim())
-        .unwrap();
-
-    if let Err(e) = writeln!(file, "{}", data) {
-        eprintln!("Couldn't write to file: {}", e);
+        .and_then(|mut file| writeln!(file, "{}", data)) {
+        Ok(_) => "Data written to file".into_response(),
+        Err(e) => {
+            eprintln!("Couldn't write to file: {}", e);
+            (axum::http::StatusCode::INTERNAL_SERVER_ERROR, "Error writing to file").into_response()
+        }
     }
 }
 
+
 async fn clear_log() -> impl IntoResponse {
     let config = declare_config();
-    if let Err(e) = fs::write(config.log_name.trim(), "") {
-        eprintln!("Error clearing log file: {}", e);
-        return "Error clearing log file".into_response();
+    match fs::write(config.log_name.trim(), "") {
+        Ok(_) => {
+            println!("{}", "Log file cleared.".red());
+            "Log file cleared".into_response()
+        }
+        Err(e) => {
+            eprintln!("Error clearing log file: {}", e);
+            (axum::http::StatusCode::INTERNAL_SERVER_ERROR, "Error clearing log file").into_response()
+        }
     }
-    println!("Log file cleared");
-    "Log file cleared".into_response()
 }
 
 async fn serve_form() -> Html<String> {

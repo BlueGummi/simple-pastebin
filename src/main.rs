@@ -35,12 +35,6 @@ pub fn declare_config() -> Config {
     if config.log_name.is_empty() {
         config.log_name = String::from("input.log");
     }
-    if !config.display_data {
-        config.display_data = true; // Default value
-    }
-    if !config.display_info {
-        config.display_info = true; // Default value
-    }
 
     config
 }

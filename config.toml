@@ -5,3 +5,5 @@ log_name = "input.log"
 display_data = true
 display_info = true
 void_mode = false
+history = true
+history_log = "history.log"

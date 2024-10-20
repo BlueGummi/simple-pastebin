@@ -22,7 +22,7 @@ impl Default for Config {
             display_data: true,
             display_info: true,
             void_mode: false,
-            history: true,
+            history: false,
             history_log: String::from("history.log"),
         }
     }

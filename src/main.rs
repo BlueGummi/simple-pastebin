@@ -82,7 +82,8 @@ async fn server() {
         .route("/", post(write_to_log))
         .route("/", get(serve_form))
         .route("/clear", post(clear_log))
-        .route("/config.toml", get(serve_config));
+        .route("/config.toml", get(serve_config))
+        .route("/script.js", get(serve_script));
 
     if !config.void_mode {
         router = router.route(&(format!("/{}", config.log_name.trim())), get(serve_log));
@@ -186,6 +187,13 @@ async fn serve_log() -> impl IntoResponse {
     }
 }
 
+async fn serve_script() -> impl IntoResponse {
+    match fs::read_to_string("script.js") {
+        Ok(content) => content,
+        Err(_) => "Error reading script.js".to_string(),
+    }
+}
+
 async fn serve_config() -> impl IntoResponse {
     match fs::read_to_string("config.toml") {
         Ok(content) => content,
@@ -202,7 +210,8 @@ async fn write_to_history(mut data: String) {
         .open(config.history_log.trim())
         .and_then(|mut file| writeln!(file, "{}", data))
     {
-        Ok(_) => ,
+        Ok(_) => {
+        },
         Err(e) => {
             eprintln!("Couldn't write to history: {}", e);
         }

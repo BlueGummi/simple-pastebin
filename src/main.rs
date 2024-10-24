@@ -10,6 +10,7 @@ use std::{fs, fs::OpenOptions, io::Write};
 use tokio::{signal, time};
 mod config;
 use owo_colors::OwoColorize;
+use tower_http::services::ServeDir;
 
 pub fn declare_config() -> Config {
     let config_content = match fs::read_to_string("config.toml") {
@@ -83,8 +84,8 @@ async fn server() {
         .route("/", get(serve_form))
         .route("/clear", post(clear_log))
         .route("/config.toml", get(serve_config))
-        .route("/styles.css", get(serve_css))
-        .route("/script.js", get(serve_script));
+        .nest_service("/assets", ServeDir::new("assets"));
+
 
     if !config.void_mode {
         router = router.route(&(format!("/{}", config.log_name.trim())), get(serve_log));
@@ -188,24 +189,10 @@ async fn serve_log() -> impl IntoResponse {
     }
 }
 
-async fn serve_script() -> impl IntoResponse {
-    match fs::read_to_string("assets/script.js") {
-        Ok(content) => content,
-        Err(_) => "Error reading script.js".to_string(),
-    }
-}
-
 async fn serve_config() -> impl IntoResponse {
     match fs::read_to_string("config.toml") {
         Ok(content) => content,
         Err(_) => "Error reading config.toml".to_string(),
-    }
-}
-
-async fn serve_css() -> impl IntoResponse {
-    match fs::read_to_string("assets/styles.css") {
-        Ok(content) => content,
-        Err(_) => "Error reading styles.css".to_string(),
     }
 }
 

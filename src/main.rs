@@ -41,6 +41,7 @@ pub fn declare_config() -> Config {
 }
 
 async fn clear_file_after_duration(file_path: &str, duration: Duration) {
+    let config = declare_config();
     loop {
         let start_time = Instant::now();
         time::sleep(duration).await;
@@ -52,7 +53,7 @@ async fn clear_file_after_duration(file_path: &str, duration: Duration) {
             .and_then(|mut file| file.write_all(b""))
         {
             eprintln!("Failed to clear file: {}", e);
-        } else {
+        } else if config.display_info {
             println!(
                 "{} {} {:?}",
                 "File cleared".green(),
@@ -85,7 +86,6 @@ async fn server() {
         .route("/clear", post(clear_log))
         .route("/config.toml", get(serve_config))
         .nest_service("/assets", ServeDir::new("assets"));
-
 
     if !config.void_mode {
         router = router.route(&(format!("/{}", config.log_name.trim())), get(serve_log));
@@ -176,8 +176,8 @@ async fn clear_log() -> impl IntoResponse {
 }
 
 async fn serve_form() -> Html<String> {
-    let content =
-        fs::read_to_string("assets/index.html").unwrap_or_else(|_| "Error loading HTML file".to_string());
+    let content = fs::read_to_string("assets/index.html")
+        .unwrap_or_else(|_| "Error loading HTML file".to_string());
     Html(content)
 }
 
@@ -198,15 +198,18 @@ async fn serve_config() -> impl IntoResponse {
 
 async fn write_to_history(mut data: String) {
     let config = declare_config();
-    data = format!("Event at {} |: {}", Local::now().format("%D %I:%M:%S %p"), data);
+    data = format!(
+        "Event at {} |: {}",
+        Local::now().format("%D %I:%M:%S %p"),
+        data
+    );
     match OpenOptions::new()
         .append(true)
         .create(true)
         .open(config.history_log.trim())
         .and_then(|mut file| writeln!(file, "{}", data))
     {
-        Ok(_) => {
-        },
+        Ok(_) => {}
         Err(e) => {
             eprintln!("Couldn't write to history: {}", e);
         }

@@ -143,7 +143,19 @@ document.getElementById('input').addEventListener('keydown', function(event) {
         document.getElementById('inputForm').dispatchEvent(new Event('submit'));
     }
 });
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+        const icon = document.getElementById('icon');
 
+        themeToggle.addEventListener('click', () => {
+            if (body.classList.contains('light')) {
+                body.classList.replace('light', 'dark');
+                icon.src = 'moon-icon.png'; // Change to your moon icon path
+            } else {
+                body.classList.replace('dark', 'light');
+                icon.src = 'sun-icon.png'; // Change to your sun icon path
+            }
+        });
 window.onload = () => {
     loadConfig(); // Load the configuration
     loadLog(); // Load the log

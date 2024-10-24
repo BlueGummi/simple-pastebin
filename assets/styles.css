@@ -1,0 +1,120 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    white-space: pre-wrap;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: background-color 0.5s, color 0.5s;
+}
+
+body.light {
+    background-color: #ffffff;
+    color: #000000;
+}
+
+body.dark {
+    background-color: #222222;
+    color: #ffffff;
+}
+
+.container {
+    display: flex;
+    width: 100%;
+    max-width: 800px;
+    overflow-x: auto;
+    position: relative;
+}
+
+.timestamps, .data {
+    background-color: #f4f4f4;
+    border: 1px solid #ddd;
+    padding: 10px;
+    flex: 1;
+    overflow-x: auto;
+    font-size: 16px;
+    min-height: 3em;
+    transition: background-color 0.5s, color 0.5s;
+}
+
+body.dark .timestamps, body.dark .data {
+    background-color: #333333;
+    color: #ffffff;
+}
+
+#inputForm {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 800px;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+
+#input {
+    width: 100%;
+    min-height: 30px;
+    padding: 10px;
+    box-sizing: border-box;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+button {
+    border: none;
+    border-radius: 20px;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#submitButton {
+    padding: 10px 20px;
+    background-color: green;
+    font-size: 16px;
+    width: 100%;
+    max-width: 200px;
+    margin: 5px auto;
+}
+
+#downloadButton {
+    padding: 7px;
+    background-color: blue;
+    font-size: 13px;
+    width: 100%;
+    max-width: 100px;
+    margin: 5px auto;
+}
+
+#deleteButton {
+    padding: 5px 10px;
+    background-color: red;
+    font-size: 14px;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+#themeToggle {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+    background-color: #ddd;
+    transition: background-color 0.3s;
+}
+
+h1 {
+    font-size: 20px;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+#expirationMessage {
+    font-size: 16px;
+    margin-bottom: 20px;
+}

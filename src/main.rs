@@ -83,6 +83,7 @@ async fn server() {
         .route("/", get(serve_form))
         .route("/clear", post(clear_log))
         .route("/config.toml", get(serve_config))
+        .route("/styles.css", get(serve_css))
         .route("/script.js", get(serve_script));
 
     if !config.void_mode {
@@ -175,7 +176,7 @@ async fn clear_log() -> impl IntoResponse {
 
 async fn serve_form() -> Html<String> {
     let content =
-        fs::read_to_string("index.html").unwrap_or_else(|_| "Error loading HTML file".to_string());
+        fs::read_to_string("assets/index.html").unwrap_or_else(|_| "Error loading HTML file".to_string());
     Html(content)
 }
 
@@ -188,7 +189,7 @@ async fn serve_log() -> impl IntoResponse {
 }
 
 async fn serve_script() -> impl IntoResponse {
-    match fs::read_to_string("script.js") {
+    match fs::read_to_string("assets/script.js") {
         Ok(content) => content,
         Err(_) => "Error reading script.js".to_string(),
     }
@@ -198,6 +199,13 @@ async fn serve_config() -> impl IntoResponse {
     match fs::read_to_string("config.toml") {
         Ok(content) => content,
         Err(_) => "Error reading config.toml".to_string(),
+    }
+}
+
+async fn serve_css() -> impl IntoResponse {
+    match fs::read_to_string("assets/styles.css") {
+        Ok(content) => content,
+        Err(_) => "Error reading styles.css".to_string(),
     }
 }
 

@@ -9,7 +9,7 @@
 <body class="light">
     <div class="container">
         <div class="icon" id="icon">☀️</div>
-        <label class="toggle" id="toggle">
+        <label class="toggle" id="toggle" aria-label="Toggle dark mode">
             <input type="checkbox" id="checkbox" style="display: none;">
             <span class="slider"></span>
         </label>
@@ -20,14 +20,17 @@
         <br>
         <input type="submit" id="submitButton" value="Submit">
     </form>
+    
     <h1>Current Pastebin</h1>
     <div id="expirationMessage">(Clears every X)</div>
     <button id="downloadButton">Download</button> 
+
     <div class="container">
         <button id="deleteButton">Delete</button>
         <div class="timestamps" id="timestamps" aria-live="polite">Loading...</div>
         <div class="data" id="fileContent" aria-live="polite">Loading...</div>
     </div>
+    
     <script type="text/javascript" src="assets/script.js"></script>
 </body>
 </html>

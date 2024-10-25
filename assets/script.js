@@ -1,4 +1,5 @@
 let fileName;
+let previousLogData = ''; // To track previous log data
 
 // Theme changer
 let checkbox = document.getElementById('checkbox');
@@ -59,13 +60,18 @@ function displayExpirationMessage(expirationValue) {
     document.getElementById('expirationMessage').textContent = ` (Clears every ${formattedParts.join(', ')})`;
 }
 
-// Load log
+// Load log with change detection
 async function loadLog() {
     try {
         let response = await fetch(fileName);
         if (!response.ok) throw new Error('Network response was not ok');
         let text = await response.text();
-        parseLogData(text);
+        
+        // Check if the log has changed
+        if (text !== previousLogData) {
+            previousLogData = text; // Update previous log data
+            parseLogData(text); // Only parse if there is a change
+        }
     } catch (error) {
         document.getElementById('fileContent').textContent = 'Error loading log';
         document.getElementById('timestamps').textContent = '';
@@ -144,17 +150,44 @@ function autoResize(textarea) {
     textarea.style.height = `${textarea.scrollHeight}px`;
 }
 
-// Network stuff
-document.getElementById('inputForm').addEventListener('submit', function(event) {
-    event.preventDefault(); // Prevent form submission
-    const inputData = document.getElementById('input').value;
-    parseLogData(inputData); // Parse the input data
-    document.getElementById('input').value = ''; // Clear the textarea
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("Thing load");
+    document.getElementById('inputForm').addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const inputData = document.getElementById('input').value;
+        console.log('Form submitted with data:', inputData);
+
+        try {
+            const response = await fetch('/', { // Ensure this URL is correct
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/plain',
+                },
+                body: inputData
+            });
+
+            console.log('Response status:', response.status);
+
+            if (response.ok) {
+                const text = await response.text();
+                console.log('Server response:', text);
+                loadLog();
+            } else {
+                console.error('Error:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Fetch error:', error);
+        }
+
+        document.getElementById('input').value = '';
+    });
 });
 
+// Load configuration and initial log on window load
 window.onload = () => {
     loadConfig(); // Load the configuration
     loadLog(); // Load the log
 };
 
-setInterval(loadLog, 500);
+// Set an interval to check for log changes every 2 seconds (or adjust as needed)
+setInterval(loadLog, 2000);

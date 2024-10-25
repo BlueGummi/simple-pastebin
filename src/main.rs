@@ -3,10 +3,11 @@ use axum::{
     routing::{get, post},
     Router,
 };
+use std::path::Path;
 use chrono::Local;
 use config::Config;
 use std::time::{Duration, Instant};
-use std::{fs, fs::OpenOptions, io::Write};
+use std::{fs, fs::OpenOptions, io::Write, fs::create_dir_all};
 use tokio::{signal, time};
 mod config;
 use owo_colors::OwoColorize;
@@ -136,10 +137,26 @@ async fn write_to_log(body: String) -> impl IntoResponse {
         println!("{}", data.white());
     }
 
+    // Create parent directories if they do not exist
+    let log_path = Path::new(config.log_name.trim());
+    if let Some(parent) = log_path.parent() {
+        if !parent.exists() {
+            if let Err(e) = create_dir_all(parent) {
+                eprintln!("Couldn't create directories: {}", e);
+                return (
+                    axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                    "Error creating directories",
+                )
+                    .into_response();
+            }
+        }
+    }
+
+    // Open the log file and write to it
     match OpenOptions::new()
         .append(true)
         .create(true)
-        .open(config.log_name.trim())
+        .open(log_path)
         .and_then(|mut file| writeln!(file, "{}", data))
     {
         Ok(_) => "Data written to file".into_response(),
@@ -195,7 +212,6 @@ async fn serve_config() -> impl IntoResponse {
         Err(_) => "Error reading config.toml".to_string(),
     }
 }
-
 async fn write_to_history(mut data: String) {
     let config = declare_config();
     data = format!(
@@ -203,10 +219,23 @@ async fn write_to_history(mut data: String) {
         Local::now().format("%D %I:%M:%S %p"),
         data
     );
+
+    // Create parent directories if they do not exist
+    let history_log_path = Path::new(config.history_log.trim());
+    if let Some(parent) = history_log_path.parent() {
+        if !parent.exists() {
+            if let Err(e) = create_dir_all(parent) {
+                eprintln!("Couldn't create directories: {}", e);
+                return; // Exit the function if directory creation fails
+            }
+        }
+    }
+
+    // Open the history log file and write to it
     match OpenOptions::new()
         .append(true)
         .create(true)
-        .open(config.history_log.trim())
+        .open(history_log_path)
         .and_then(|mut file| writeln!(file, "{}", data))
     {
         Ok(_) => {}

@@ -1,6 +1,8 @@
 # simple-pastebin
 A simple pastebin server, with a backend written in Rust  🚀 🚀 🚀
 
+# i need to update this, it's so outdated 💀 💀 💀 💀 
+
 ## How do I get this to work?
 
 ``git clone https://github.com/BlueGummi/simple-pastebin.git``

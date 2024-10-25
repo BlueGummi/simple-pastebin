@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Form submitted with data:', inputData);
 
         try {
-            const response = await fetch('/', { // Ensure this URL is correct
+            const response = await fetch('/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'text/plain',

@@ -123,8 +123,8 @@ button {
 .toggle {
     display: flex;
     align-items: center;
-    width: 60px; /* Enlarged width */
-    height: 34px; /* Enlarged height */
+    width: 60px;
+    height: 34px;
     right: 0;
     background-color: #ccc;
     border-radius: 34px; 
@@ -150,8 +150,8 @@ button {
 .slider::before {
     content: "";
     position: absolute;
-    height: 34px; /* Enlarged circle */
-    width: 34px; /* Enlarged circle */
+    height: 34px;
+    width: 34px;
     bottom: 0; 
     background-color: white;
     border-radius: 50%;
@@ -163,12 +163,12 @@ input:checked + .slider {
 }
 
 input:checked + .slider::before {
-    transform: translateX(26px); /* Adjusted for enlarged circle */
+    transform: translateX(26px);
 }
 
 .icon {
     font-size: 24px; 
-    margin-right: 10px; /* Adjusted margin */
+    margin-right: 10px;
     padding-bottom: 50px;
     top: 0;
     right: 0;

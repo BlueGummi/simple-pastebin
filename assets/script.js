@@ -96,17 +96,15 @@ function parseLogData(data) {
         }
     });
 
-    // Display timestamps and content
     document.getElementById('timestamps').textContent = timestamps.join('\n');
-    document.getElementById('fileContent').innerHTML = content.join('<br>'); // Render <a> tags
+    document.getElementById('fileContent').innerHTML = content.join('<br>'); // Use innerHTML to render <a> tags
 }
 
 // Function to convert URLs in text to anchor tags
 function convertUrlsToLinks(text) {
-    return text.replace(/(https?:\/\/[^\s]+)/g, url => 
-        `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`
-    );
+    return text.replace(/(https?:\/\/[^\s]+)/g, url => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
 }
+
 function downloadLog() {
     fetch(fileName)
         .then(response => response.blob())

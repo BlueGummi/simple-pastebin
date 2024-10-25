@@ -1,17 +1,32 @@
 let fileName;
 
 // Theme changer
-document.getElementById('themeToggle').addEventListener('click', () => {
-    document.body.classList.toggle('dark');
+let checkbox = document.getElementById('checkbox');
+let body = document.body;
+let icon = document.getElementById('icon');
+let toggle = document.getElementById('toggle');
+
+checkbox.addEventListener('change', () => {
+    if (checkbox.checked) {
+        body.classList.remove('light');
+        body.classList.add('dark');
+        icon.textContent = '🌙';
+        toggle.classList.add('active');
+    } else {
+        body.classList.remove('dark');
+        body.classList.add('light');
+        icon.textContent = '☀️';
+        toggle.classList.remove('active');
+    }
 });
 
 // Load the expiration value and log name from config.toml
 async function loadConfig() {
     try {
-        const response = await fetch('config.toml');
+        let response = await fetch('config.toml');
         if (!response.ok) throw new Error('Network response was not ok');
-        const text = await response.text();
-        const expirationValue = parseExpiration(text);
+        let text = await response.text();
+        let expirationValue = parseExpiration(text);
         displayExpirationMessage(expirationValue);
         fileName = parseFileName(text);
     } catch (error) {
@@ -20,7 +35,7 @@ async function loadConfig() {
 }
 
 function parseFileName(tomlText) {
-    const logNameMatch = tomlText.match(/log_name\s*=\s*"(.*?)"/);
+    let logNameMatch = tomlText.match(/log_name\s*=\s*"(.*?)"/);
     return logNameMatch ? removeQuotes(logNameMatch[1]) : '';
 }
 
@@ -29,16 +44,16 @@ function removeQuotes(text) {
 }
 
 function parseExpiration(tomlText) {
-    const expirationMatch = tomlText.match(/expiration\s*=\s*"(.*?)"/);
+    let expirationMatch = tomlText.match(/expiration\s*=\s*"(.*?)"/);
     return expirationMatch ? expirationMatch[1] : '';
 }
 
 function displayExpirationMessage(expirationValue) {
-    const timeUnits = { d: 'day', h: 'hour', m: 'minute', s: 'second' };
-    const parts = expirationValue.match(/(\d+)([dhms])/g) || [];
-    const formattedParts = parts.map(part => {
-        const value = part.slice(0, -1);
-        const unit = part.slice(-1);
+    let timeUnits = { d: 'day', h: 'hour', m: 'minute', s: 'second' };
+    let parts = expirationValue.match(/(\d+)([dhms])/g) || [];
+    let formattedParts = parts.map(part => {
+        let value = part.slice(0, -1);
+        let unit = part.slice(-1);
         return `${value} ${timeUnits[unit] + (value > 1 ? 's' : '')}`;
     });
     document.getElementById('expirationMessage').textContent = ` (Clears every ${formattedParts.join(', ')})`;
@@ -47,9 +62,9 @@ function displayExpirationMessage(expirationValue) {
 // Load log
 async function loadLog() {
     try {
-        const response = await fetch(fileName);
+        let response = await fetch(fileName);
         if (!response.ok) throw new Error('Network response was not ok');
-        const text = await response.text();
+        let text = await response.text();
         parseLogData(text);
     } catch (error) {
         document.getElementById('fileContent').textContent = 'Error loading log';
@@ -59,32 +74,45 @@ async function loadLog() {
 
 // Parse log data
 function parseLogData(data) {
-    const lines = data.split('\n');
-    const timestamps = [];
-    const content = [];
-    const timestampRegex = /^\d{2}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2} (AM|PM) \|: /;
+    let lines = data.split('\n');
+    let timestamps = [];
+    let content = [];
+    let timestampRegex = /^\d{2}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2} (AM|PM) \|: /;
+
     lines.forEach(line => {
-        const match = timestampRegex.exec(line);
+        let match = timestampRegex.exec(line);
         if (match) {
-            const timestamp = line.substring(0, match[0].length - 3).trim();
-            const contentText = line.substring(match[0].length).trim();
+            let timestamp = line.substring(0, match[0].length - 3).trim();
+            let contentText = line.substring(match[0].length).trim();
+
+            // Convert URLs in contentText to <a> tags
+            contentText = convertUrlsToLinks(contentText);
+
             timestamps.push(timestamp);
             content.push(contentText);
         } else {
             timestamps.push('');
-            content.push(line);
+            content.push(convertUrlsToLinks(line));
         }
     });
+
+    // Display timestamps and content
     document.getElementById('timestamps').textContent = timestamps.join('\n');
-    document.getElementById('fileContent').textContent = content.join('\n');
+    document.getElementById('fileContent').innerHTML = content.join('<br>'); // Render <a> tags
 }
 
+// Function to convert URLs in text to anchor tags
+function convertUrlsToLinks(text) {
+    return text.replace(/(https?:\/\/[^\s]+)/g, url => 
+        `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`
+    );
+}
 function downloadLog() {
     fetch(fileName)
         .then(response => response.blob())
         .then(blob => {
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
             a.href = url;
             a.download = fileName; 
             document.body.appendChild(a);
@@ -99,7 +127,7 @@ function downloadLog() {
 async function deleteLog() {
     if (confirm("Are you sure you want to delete the whole pastebin?")) {
         try {
-            const response = await fetch('/clear', { method: 'POST' });
+            let response = await fetch('/clear', { method: 'POST' });
             if (!response.ok) throw new Error('Network response was not ok');
             loadLog();
         } catch (error) {
@@ -119,10 +147,10 @@ function autoResize(textarea) {
 // Network stuff
 document.getElementById('inputForm').addEventListener('submit', async (event) => {
     event.preventDefault();
-    const inputData = document.getElementById('input').value;
+    let inputData = document.getElementById('input').value;
     if (inputData) {
         try {
-            const response = await fetch('/', {
+            let response = await fetch('/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
                 body: inputData
@@ -137,25 +165,6 @@ document.getElementById('inputForm').addEventListener('submit', async (event) =>
     }
 });
 
-document.getElementById('input').addEventListener('keydown', function(event) {
-    if (event.key === 'Enter' && !event.shiftKey) {
-        event.preventDefault();
-        document.getElementById('inputForm').dispatchEvent(new Event('submit'));
-    }
-});
-        const themeToggle = document.getElementById('themeToggle');
-        const body = document.body;
-        const icon = document.getElementById('icon');
-
-        themeToggle.addEventListener('click', () => {
-            if (body.classList.contains('light')) {
-                body.classList.replace('light', 'dark');
-                icon.src = 'moon-icon.png'; // Change to your moon icon path
-            } else {
-                body.classList.replace('dark', 'light');
-                icon.src = 'sun-icon.png'; // Change to your sun icon path
-            }
-        });
 window.onload = () => {
     loadConfig(); // Load the configuration
     loadLog(); // Load the log

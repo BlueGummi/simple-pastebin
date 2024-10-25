@@ -1,6 +1,6 @@
 address = "127.0.0.1"
 port = 6060
-expiration = "5s"
+expiration = "50d"
 log_name = "logs/input.log"
 display_data = false
 display_info = false

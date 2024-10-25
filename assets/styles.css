@@ -106,19 +106,65 @@ button {
 
 #themeToggle {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 10px; /* Adjusted for a higher position */
+    right: 10px; 
+    left: 1110%;
     cursor: pointer;
-    padding: 5px 10px;
-    border-radius: 5px;
-    background-color: #ddd;
-    transition: background-color 0.3s;
     display: flex;
     align-items: center;
+    padding: 5px; 
 }
-#themeToggle .icon {
-    width: 20px;
-    height: 20px;
+
+.toggle {
+    display: flex;
+    align-items: center;
+    width: 60px; /* Enlarged width */
+    height: 34px; /* Enlarged height */
+    left: 1110%;
+    background-color: #ccc;
+    border-radius: 34px; 
+    transition: background-color 0.3s;
+    margin-left: 10px; 
+}
+
+.toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: relative;
+
+    width: 100%;
+    height: 100%;
+    border-radius: 34px; 
+    transition: background-color 0.3s;
+}
+
+.slider::before {
+    content: "";
+    position: absolute;
+    height: 34px; /* Enlarged circle */
+    width: 34px; /* Enlarged circle */
+    bottom: 0; 
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s;
+}
+
+input:checked + .slider {
+    background-color: #4caf50; 
+}
+
+input:checked + .slider::before {
+    transform: translateX(26px); /* Adjusted for enlarged circle */
+}
+
+.icon {
+    font-size: 24px; 
+    margin-right: 10px; /* Adjusted margin */
+    padding: 0 5px; 
 }
 
 h1 {

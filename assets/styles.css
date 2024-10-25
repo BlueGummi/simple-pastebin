@@ -1,7 +1,7 @@
 body {
     font-family: Poppins, sans-serif;
     margin: 20px;
-    transform: rotate(5deg);
+    /*transform: rotate(5deg);*/
     padding-top: 50px;
     white-space: pre-wrap;
     display: flex;

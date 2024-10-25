@@ -72,7 +72,6 @@ async function loadLog() {
     }
 }
 
-// Parse log data
 function parseLogData(data) {
     let lines = data.split('\n');
     let timestamps = [];
@@ -96,13 +95,16 @@ function parseLogData(data) {
         }
     });
 
+    // Display timestamps and content
     document.getElementById('timestamps').textContent = timestamps.join('\n');
     document.getElementById('fileContent').innerHTML = content.join('<br>'); // Use innerHTML to render <a> tags
 }
 
 // Function to convert URLs in text to anchor tags
 function convertUrlsToLinks(text) {
-    return text.replace(/(https?:\/\/[^\s]+)/g, url => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
+    return text.replace(/(https?:\/\/[^\s]+)/g, url => 
+        `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`
+    );
 }
 
 function downloadLog() {
@@ -143,24 +145,11 @@ function autoResize(textarea) {
 }
 
 // Network stuff
-document.getElementById('inputForm').addEventListener('submit', async (event) => {
-    event.preventDefault();
-    let inputData = document.getElementById('input').value;
-    if (inputData) {
-        try {
-            let response = await fetch('/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain' },
-                body: inputData
-            });
-            if (!response.ok) throw new Error('Network response was not ok');
-            document.getElementById('input').value = '';
-            autoResize(document.getElementById('input'));
-            loadLog();
-        } catch (error) {
-            console.error('Error submitting data:', error);
-        }
-    }
+document.getElementById('inputForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevent form submission
+    const inputData = document.getElementById('input').value;
+    parseLogData(inputData); // Parse the input data
+    document.getElementById('input').value = ''; // Clear the textarea
 });
 
 window.onload = () => {

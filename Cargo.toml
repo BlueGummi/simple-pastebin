@@ -1,5 +1,5 @@
 [package]
-name = "SimplePastebin"
+name = "simple_pastebin"
 version = "0.1.0"
 edition = "2021"
 

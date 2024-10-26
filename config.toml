@@ -1,5 +1,5 @@
 address = "0.0.0.0"
-port = 8080
+port = 6060
 expiration = "50d"
 log_name = "logs/input.log"
 display_data = true

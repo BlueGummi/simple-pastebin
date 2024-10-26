@@ -40,3 +40,13 @@ to read the pastebin,
 
 to delete the pastebin,
 ``curl -X POST <server name>/clear``
+
+
+
+# Running in docker
+
+To run this in docker, please make sure the docker daemon is running and docker is installed.
+
+``cargo build --release --target=x86_64-unknown-linux-musl``
+``docker build -t simple_pastebin .``
+``docker run -p HOST_PORT:CONTAINER_PORT simple_pastebin``

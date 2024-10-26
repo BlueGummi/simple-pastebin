@@ -1,4 +1,4 @@
-add color theming support
-add colored output
+DONE: add color theming support
+DONE: add colored output
 add welcome message
-add better looking buttons
+:skull: add better looking buttons

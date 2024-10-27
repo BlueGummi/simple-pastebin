@@ -82,7 +82,6 @@ async fn main() {
 async fn server() {
     let config = declare_config();
     let mut router = Router::new()
-        .route("/", post(write_to_log))
         .route("/", get(serve_form))
         .route("/clear", post(clear_log))
         .route("/config.toml", get(serve_config))
@@ -90,6 +89,7 @@ async fn server() {
 
     if !config.void_mode {
         router = router.route(&(format!("/{}", config.log_name.trim())), get(serve_log));
+	router = router.route("/", post(write_to_log));
     }
 
     let listener =

@@ -4,6 +4,6 @@ expiration = "50d"
 log_name = "logs/input.log"
 display_data = true
 display_info = true
-void_mode = false
+void_mode = true
 history = true
 history_log = "logs/history.log"

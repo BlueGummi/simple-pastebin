@@ -16,6 +16,10 @@ Before continuing with the rest of the setup steps, clone the repository and `cd
 
 This webserver can be configured by editing fields in `config.toml`
 
+It is also possible to pass each field as a flag, e.g. --port.
+
+If a config option is passed as a flag it will override the value in `config.toml`.
+
 ### `config.toml` fields
 
 The IP address the server will be hosted on:

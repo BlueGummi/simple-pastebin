@@ -12,7 +12,46 @@ use std::time::{Duration, Instant};
 mod config;
 use owo_colors::OwoColorize;
 use tower_http::services::ServeDir;
+use clap::{Parser};
 
+#[derive(Parser)]
+struct Cli {
+    /// Address to bind to
+    #[arg(short, long)]
+    address: Option<String>,
+
+    /// Port to listen on
+    #[arg(short, long)]
+    port: Option<u16>,
+
+    /// Expiration duration
+    #[arg(short, long)]
+    expiration: Option<String>,
+
+    /// Log file name
+    #[arg(short, long)]
+    log_name: Option<String>,
+
+    /// Display data
+    #[arg(long)]
+    display_data: Option<bool>,
+
+    /// Display info
+    #[arg(long)]
+    display_info: Option<bool>,
+
+    /// Void mode flag
+    #[arg(long)]
+    void_mode: Option<bool>,
+
+    /// History flag
+    #[arg(long)]
+    history: Option<bool>,
+
+    /// History log name
+    #[arg(long)]
+    history_log: Option<String>,
+}
 pub fn declare_config() -> Config {
     let config_content = fs::read_to_string("config.toml").unwrap_or_else(|_| {
         eprintln!("Failed to read config.toml. Using default configuration.");
@@ -20,10 +59,17 @@ pub fn declare_config() -> Config {
     });
 
     let mut config: Config = toml::de::from_str(&config_content).unwrap_or_default();
-
-    config
-        .address
-        .get_or_insert_with(|| "127.0.0.1".to_string());
+    let cli = Cli::parse();
+    config.address = cli.address.or(config.address);
+    config.port = cli.port.or(config.port);
+    config.expiration = cli.expiration.or(config.expiration);
+    config.log_name = cli.log_name.or(config.log_name);
+    config.display_data = cli.display_data.or(config.display_data);
+    config.display_info = cli.display_info.or(config.display_info);
+    config.void_mode = cli.void_mode.or(config.void_mode);
+    config.history = cli.history.or(config.history);
+    config.history_log = cli.history_log.or(config.history_log);
+    config.address.get_or_insert_with(|| "127.0.0.1".to_string());
     config.port.get_or_insert(6060);
     config.expiration.get_or_insert("10m".to_string());
     config.log_name.get_or_insert("logs/input.log".to_string());

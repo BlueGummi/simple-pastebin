@@ -12,3 +12,4 @@ serde = "1.0.210"
 config = "0.14.0"
 owo-colors = "3"
 tower-http =  { version = "0.6.1", features = ["fs"] }
+clap = { version = "4.5.20", features = ["derive"] }

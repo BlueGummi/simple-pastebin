@@ -57,8 +57,7 @@ The log location of the history, must be set even if history is false:
 
 `history_log` - Must be a string, e.g. `"logs/history.log"`
 
-If **any** fields are missing in config.toml, all values will default. This is a FEATURE, not a BUG.
-
+Missing fields will be set to their default values.
 
 ## Compiling/Running
 

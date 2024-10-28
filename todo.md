@@ -5,3 +5,14 @@ add welcome message
 
 
 FIX MOBILE BUTTONS
+
+
+add clap for cmdline support
+
+make the config stuff of Option type so we can fill default values
+
+fix docker
+
+add proper arm support in docker and make shell scripts to automate stuff
+
+I AM GOING NUTS!!!!

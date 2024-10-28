@@ -6,9 +6,9 @@ use axum::{
 use chrono::Local;
 use config::Config;
 use std::path::Path;
-use std::time::{Duration, Instant};
 use std::{fs, fs::create_dir_all, fs::OpenOptions, io::Write};
 use tokio::{signal, time};
+use std::time::{Duration, Instant};
 mod config;
 use owo_colors::OwoColorize;
 use tower_http::services::ServeDir;
@@ -27,7 +27,6 @@ pub fn declare_config() -> Config {
     config.port.get_or_insert(6060);
     config.expiration.get_or_insert("10m".to_string());
     config.log_name.get_or_insert("logs/input.log".to_string());
-
     config
 }
 
@@ -76,15 +75,13 @@ async fn server() {
         .route("/clear", post(clear_log))
         .route("/config.toml", get(serve_config))
         .nest_service("/assets", ServeDir::new("assets"));
-
-    if config.void_mode.unwrap_or(false) {
+    if !config.void_mode.unwrap_or(false) {
         router = router.route(
-            &(format!("/{}", config.log_name.as_ref().unwrap().trim())),
+            &(format!("/{}", config.log_name.unwrap().trim())),
             get(serve_log),
         );
         router = router.route("/", post(write_to_log));
     }
-
     let listener = tokio::net::TcpListener::bind(format!(
         "{}:{}",
         config.address.as_ref().unwrap().trim(),

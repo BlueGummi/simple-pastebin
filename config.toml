@@ -1,5 +1,6 @@
 port = 8080
-log_name = "logs/bonk.log"
+log_name = "logs/input.log"
 history_log = "logs/history.log"
 display_data = true
 display_info = true
+void_mode = false

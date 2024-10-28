@@ -31,8 +31,6 @@ pub fn parse_duration(expiration: &Option<String>) -> u64 {
     let mut total_seconds = 0;
     let mut number = String::new();
     if let Some(ref expiration) = expiration {
-
-    
         for c in expiration.chars() {
             match c {
                 'd' => {

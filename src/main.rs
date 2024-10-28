@@ -7,7 +7,7 @@ use chrono::Local;
 use config::Config;
 use std::path::Path;
 use std::time::{Duration, Instant};
-use std::{fs, fs::OpenOptions, io::Write, fs::create_dir_all};
+use std::{fs, fs::create_dir_all, fs::OpenOptions, io::Write};
 use tokio::{signal, time};
 mod config;
 use owo_colors::OwoColorize;
@@ -21,7 +21,9 @@ pub fn declare_config() -> Config {
 
     let mut config: Config = toml::de::from_str(&config_content).unwrap_or_default();
 
-    config.address.get_or_insert_with(|| "127.0.0.1".to_string());
+    config
+        .address
+        .get_or_insert_with(|| "127.0.0.1".to_string());
     config.port.get_or_insert(6060);
     config.expiration.get_or_insert("10m".to_string());
     config.log_name.get_or_insert("logs/input.log".to_string());
@@ -76,7 +78,10 @@ async fn server() {
         .nest_service("/assets", ServeDir::new("assets"));
 
     if config.void_mode.unwrap_or(false) {
-        router = router.route(&(format!("/{}", config.log_name.as_ref().unwrap().trim())), get(serve_log));
+        router = router.route(
+            &(format!("/{}", config.log_name.as_ref().unwrap().trim())),
+            get(serve_log),
+        );
         router = router.route("/", post(write_to_log));
     }
 
@@ -138,7 +143,7 @@ async fn write_to_log(body: String) -> impl IntoResponse {
                     axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                     "Error creating directories",
                 )
-                .into_response();
+                    .into_response();
             }
         }
     }
@@ -157,7 +162,7 @@ async fn write_to_log(body: String) -> impl IntoResponse {
                 axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 "Error writing to file",
             )
-            .into_response()
+                .into_response()
         }
     }
 }
@@ -178,7 +183,7 @@ async fn clear_log() -> impl IntoResponse {
                 axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 "Error clearing log file",
             )
-            .into_response()
+                .into_response()
         }
     }
 }
@@ -212,18 +217,16 @@ async fn write_to_history(mut data: String) {
         data
     );
 
-    // Create parent directories if they do not exist
     let history_log_path = Path::new(config.history_log.as_ref().unwrap().trim());
     if let Some(parent) = history_log_path.parent() {
         if !parent.exists() {
             if let Err(e) = create_dir_all(parent) {
                 eprintln!("Couldn't create directories: {}", e);
-                return; // Exit the function if directory creation fails
+                return;
             }
         }
     }
 
-    // Open the history log file and write to it
     match OpenOptions::new()
         .append(true)
         .create(true)

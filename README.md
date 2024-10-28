@@ -93,6 +93,10 @@ To run this in docker, please make sure the docker daemon is running and docker 
 
 To compile for a musl docker image (it's Alpine Linux),
 
+`rustup target add x86_64-unknown-linux-musl`
+
+
+
 `cargo build --release --target=x86_64-unknown-linux-musl`
 
 

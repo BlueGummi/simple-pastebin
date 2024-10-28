@@ -188,6 +188,4 @@ window.onload = () => {
     loadConfig(); // Load the configuration
     loadLog(); // Load the log
 };
-
-// Set an interval to check for log changes every 2 seconds (or adjust as needed)
 setInterval(loadLog, 2000);

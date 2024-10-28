@@ -3,9 +3,9 @@ use axum::{
     routing::{get, post},
     Router,
 };
-use std::path::Path;
 use chrono::Local;
 use config::Config;
+use std::path::Path;
 use std::time::{Duration, Instant};
 use std::{fs, fs::OpenOptions, io::Write, fs::create_dir_all};
 use tokio::{signal, time};
@@ -14,29 +14,17 @@ use owo_colors::OwoColorize;
 use tower_http::services::ServeDir;
 
 pub fn declare_config() -> Config {
-    let config_content = match fs::read_to_string("config.toml") {
-        Ok(content) => content,
-        Err(_) => {
-            return Config::default();
-        }
-    };
+    let config_content = fs::read_to_string("config.toml").unwrap_or_else(|_| {
+        eprintln!("Failed to read config.toml. Using default configuration.");
+        String::new()
+    });
 
-    // Deserialize the TOML content into a Config struct
-    let mut config: Config = toml::de::from_str::<Config>(&config_content).unwrap_or_default();
+    let mut config: Config = toml::de::from_str(&config_content).unwrap_or_default();
 
-    // Check each field and replace with default if empty
-    if config.address.is_empty() {
-        config.address = String::from("127.0.0.1");
-    }
-    if config.port == 0 {
-        config.port = 6060;
-    }
-    if config.expiration.is_empty() {
-        config.expiration = String::from("10m");
-    }
-    if config.log_name.is_empty() {
-        config.log_name = String::from("input.log");
-    }
+    config.address.get_or_insert_with(|| "127.0.0.1".to_string());
+    config.port.get_or_insert(6060);
+    config.expiration.get_or_insert("10m".to_string());
+    config.log_name.get_or_insert("logs/input.log".to_string());
 
     config
 }
@@ -54,7 +42,7 @@ async fn clear_file_after_duration(file_path: &str, duration: Duration) {
             .and_then(|mut file| file.write_all(b""))
         {
             eprintln!("Failed to clear file: {}", e);
-        } else if config.display_info {
+        } else if config.display_info.unwrap_or(false) {
             println!(
                 "{} {} {:?}",
                 "File cleared".green(),
@@ -68,12 +56,12 @@ async fn clear_file_after_duration(file_path: &str, duration: Duration) {
 #[tokio::main]
 async fn main() {
     let config = declare_config();
-    let total_duration = Duration::from_secs(config::parse_duration(&config.expiration));
+    let total_duration = config::parse_duration(&config.expiration);
 
-    // spawn a task to clear the file after the specified duration
-    let log_name = config.log_name.trim().to_string();
+    // Spawn a task to clear the file after the specified duration
+    let log_name = config.log_name.expect("log_name issue").trim().to_string();
     tokio::spawn(async move {
-        clear_file_after_duration(&log_name, total_duration).await;
+        clear_file_after_duration(&log_name, Duration::from_secs(total_duration)).await;
     });
 
     server().await;
@@ -87,23 +75,26 @@ async fn server() {
         .route("/config.toml", get(serve_config))
         .nest_service("/assets", ServeDir::new("assets"));
 
-    if !config.void_mode {
-        router = router.route(&(format!("/{}", config.log_name.trim())), get(serve_log));
-	router = router.route("/", post(write_to_log));
+    if config.void_mode.unwrap_or(false) {
+        router = router.route(&(format!("/{}", config.log_name.as_ref().unwrap().trim())), get(serve_log));
+        router = router.route("/", post(write_to_log));
     }
 
-    let listener =
-        tokio::net::TcpListener::bind(format!("{}:{}", config.address.trim(), config.port))
-            .await
-            .unwrap();
+    let listener = tokio::net::TcpListener::bind(format!(
+        "{}:{}",
+        config.address.as_ref().unwrap().trim(),
+        config.port.unwrap()
+    ))
+    .await
+    .unwrap();
 
-    if config.display_info {
+    if config.display_info.unwrap_or(false) {
         println!(
             "{} {} {}:{}",
             "Server listening".green(),
             "on".blue(),
-            config.address.trim().yellow(),
-            config.port.yellow()
+            config.address.as_ref().unwrap().trim().yellow(),
+            config.port.unwrap().yellow()
         );
     }
     println!("{}", "Press Ctrl-C to exit.".red());
@@ -111,7 +102,7 @@ async fn server() {
         "{} {} {}",
         "File automatically clears".green(),
         "after".blue(),
-        config.expiration.yellow()
+        config.expiration.unwrap().trim().yellow()
     );
     let server_task = tokio::spawn({
         async move {
@@ -122,7 +113,7 @@ async fn server() {
     // Wait for the shutdown signal
     signal::ctrl_c().await.expect("failed to listen for event");
     println!("{}", "Shutting down...".red());
-    if config.history {
+    if config.history.unwrap_or(false) {
         write_to_history("Shutdown".to_string()).await;
     }
     server_task.abort();
@@ -133,12 +124,12 @@ async fn write_to_log(body: String) -> impl IntoResponse {
     let config = declare_config();
     let data = format!("{} |: {}", Local::now().format("%D %I:%M:%S %p"), body);
 
-    if config.display_data {
+    if config.display_data.unwrap_or(false) {
         println!("{}", data.white());
     }
 
     // Create parent directories if they do not exist
-    let log_path = Path::new(config.log_name.trim());
+    let log_path = Path::new(config.log_name.as_ref().unwrap().trim());
     if let Some(parent) = log_path.parent() {
         if !parent.exists() {
             if let Err(e) = create_dir_all(parent) {
@@ -147,7 +138,7 @@ async fn write_to_log(body: String) -> impl IntoResponse {
                     axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                     "Error creating directories",
                 )
-                    .into_response();
+                .into_response();
             }
         }
     }
@@ -166,17 +157,17 @@ async fn write_to_log(body: String) -> impl IntoResponse {
                 axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 "Error writing to file",
             )
-                .into_response()
+            .into_response()
         }
     }
 }
 
 async fn clear_log() -> impl IntoResponse {
     let config = declare_config();
-    match fs::write(config.log_name.trim(), "") {
+    match fs::write(config.log_name.as_ref().unwrap().trim(), "") {
         Ok(_) => {
             println!("{}", "Log file cleared.".red());
-            if config.history {
+            if config.history.unwrap_or(false) {
                 write_to_history("Log cleared.".to_string()).await;
             }
             "Log file cleared".into_response()
@@ -187,7 +178,7 @@ async fn clear_log() -> impl IntoResponse {
                 axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 "Error clearing log file",
             )
-                .into_response()
+            .into_response()
         }
     }
 }
@@ -200,7 +191,7 @@ async fn serve_form() -> Html<String> {
 
 async fn serve_log() -> impl IntoResponse {
     let config = declare_config();
-    match fs::read_to_string(config.log_name.trim()) {
+    match fs::read_to_string(config.log_name.as_ref().unwrap().trim()) {
         Ok(content) => content,
         Err(_) => "Error reading log file".to_string(),
     }
@@ -212,6 +203,7 @@ async fn serve_config() -> impl IntoResponse {
         Err(_) => "Error reading config.toml".to_string(),
     }
 }
+
 async fn write_to_history(mut data: String) {
     let config = declare_config();
     data = format!(
@@ -221,7 +213,7 @@ async fn write_to_history(mut data: String) {
     );
 
     // Create parent directories if they do not exist
-    let history_log_path = Path::new(config.history_log.trim());
+    let history_log_path = Path::new(config.history_log.as_ref().unwrap().trim());
     if let Some(parent) = history_log_path.parent() {
         if !parent.exists() {
             if let Err(e) = create_dir_all(parent) {

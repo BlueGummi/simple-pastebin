@@ -9,7 +9,7 @@ FIX MOBILE BUTTONS
 
 add clap for cmdline support
 
-make the config stuff of Option type so we can fill default values
+DONE: make the config stuff of Option type so we can fill default values
 
 fix docker
 

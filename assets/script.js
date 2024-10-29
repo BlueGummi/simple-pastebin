@@ -195,4 +195,4 @@ window.onload = () => {
     loadConfig(); // Load the configuration
     loadLog(); // Load the log
 };
-setInterval(loadLog, 2000);
+setInterval(loadLog, 500);

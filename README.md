@@ -94,14 +94,12 @@ To delete the pastebin contents,
 
 To run this in docker, please make sure the docker daemon is running and docker is installed.
 
-To compile for a musl docker image (it's Alpine Linux),
+`cargo build --release`
 
-`rustup target add x86_64-unknown-linux-musl`
+An autonomous shell script can be run to generate the Dockerfile.
 
 
-
-`cargo build --release --target=x86_64-unknown-linux-musl`
-
+`./gendockerfile.sh`
 
 To build the docker image,
 
@@ -111,6 +109,4 @@ To run the docker image,
 
 `docker run -p HOST_PORT:CONTAINER_PORT simple_pastebin # e.g. docker run -p 8080:6060 simple_pastebin`
 
-## Notice:
 
-In the `Dockerfile`, there is a field, `EXPOSE`. Please make sure that the value matches the value for the `port` in `config.toml`. e.g., if the `port` in `config.toml` is `8080`, set the `EXPOSE` value in `Dockerfile` to `8080`.

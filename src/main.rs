@@ -72,7 +72,7 @@ pub fn declare_config() -> Config {
     config.address.get_or_insert_with(|| "127.0.0.1".to_string());
     config.port.get_or_insert(6060);
     config.expiration.get_or_insert("10m".to_string());
-    config.log_name.get_or_insert("logs/input.log".to_string());
+    config.log_name.get_or_insert("input.log".to_string());
     config
 }
 

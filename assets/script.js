@@ -53,7 +53,7 @@ function removeQuotes(text) {
 
 function parseExpiration(tomlText) {
     let expirationMatch = tomlText.match(/expiration\s*=\s*"(.*?)"/);
-    return expirationMatch ? expirationMatch[1] : '';
+    return expirationMatch ? expirationMatch[1] : '10m';
 }
 
 function displayExpirationMessage(expirationValue) {

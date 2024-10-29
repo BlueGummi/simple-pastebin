@@ -30,10 +30,10 @@ a:hover {
     display: flex;
     width: 100%;
     max-width: 800px;
+    flex-grow: 1;
     overflow-x: auto;
     position: relative;
 }
-
 .timestamps, .data {
     background-color: #f4f4f4;
     border: 1px solid #ddd;
@@ -44,7 +44,18 @@ a:hover {
     min-height: 3em;
     transition: background-color 0.5s, color 0.5s;
 }
-
+.left-box {
+    display: flex;
+    flex-direction: column; 
+    margin-right: 10px; 
+}
+.data-box {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc; 
+    padding: 5px;
+    margin-bottom: 5px;
+    text-align: center;
+}
 body.dark .timestamps, body.dark .data {
     background-color: #333333;
     color: #ffffff;

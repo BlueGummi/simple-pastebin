@@ -1,6 +1,12 @@
 TODO: add welcome message
 TODO: :skull: add better looking buttons
 TODO: FIX MOBILE BUTTONS
+TODO: Use the log crate instead of whatever I'm doing
+TODO: Add functionality for creating custom pastes
+SQL?
+TODO: remove owo colors as we will use log
+TODO: proper tui/cli
+
 
 DONE: add clap for cmdline support
 

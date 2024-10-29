@@ -37,7 +37,14 @@ async function loadConfig() {
 
 function parseFileName(tomlText) {
     let logNameMatch = tomlText.match(/log_name\s*=\s*"(.*?)"/);
-    return logNameMatch ? removeQuotes(logNameMatch[1]) : '';
+    if (logNameMatch) {
+        let logName = removeQuotes(logNameMatch[1]);
+        if (logName.startsWith('#')) {
+            return 'input.log';
+        }
+        return logName;
+    }
+    return 'input.log';
 }
 
 function removeQuotes(text) {

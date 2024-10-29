@@ -10,9 +10,9 @@ use std::{fs, fs::create_dir_all, fs::OpenOptions, io::Write};
 use tokio::{signal, time};
 use std::time::{Duration, Instant};
 mod config;
-use owo_colors::OwoColorize;
 use tower_http::services::ServeDir;
 use clap::{Parser};
+use log::{info, warn, error, debug, trace};
 
 #[derive(Parser)]
 struct Cli {
@@ -36,10 +36,6 @@ struct Cli {
     #[arg(long)]
     display_data: Option<bool>,
 
-    /// Display info
-    #[arg(long)]
-    display_info: Option<bool>,
-
     /// Void mode flag
     #[arg(long)]
     void_mode: Option<bool>,
@@ -51,8 +47,14 @@ struct Cli {
     /// History log name
     #[arg(long)]
     history_log: Option<String>,
+
+    /// Set the log level
+    #[arg(long)]
+    log_level: Option<String>,
 }
+
 pub fn declare_config() -> Config {
+
     let config_content = fs::read_to_string("config.toml").unwrap_or_else(|_| {
         eprintln!("Failed to read config.toml. Using default configuration.");
         String::new()
@@ -64,20 +66,21 @@ pub fn declare_config() -> Config {
     config.port = cli.port.or(config.port);
     config.expiration = cli.expiration.or(config.expiration);
     config.log_name = cli.log_name.or(config.log_name);
+    config.log_level = cli.log_level.or(config.log_level);
     config.display_data = cli.display_data.or(config.display_data);
-    config.display_info = cli.display_info.or(config.display_info);
     config.void_mode = cli.void_mode.or(config.void_mode);
     config.history = cli.history.or(config.history);
     config.history_log = cli.history_log.or(config.history_log);
+    config.log_level.get_or_insert("info".to_string());
     config.address.get_or_insert_with(|| "127.0.0.1".to_string());
     config.port.get_or_insert(6060);
     config.expiration.get_or_insert("10m".to_string());
     config.log_name.get_or_insert("input.log".to_string());
+    std::env::set_var("RUST_LOG", config.log_level.as_ref().unwrap());
     config
 }
 
 async fn clear_file_after_duration(file_path: &str, duration: Duration) {
-    let config = declare_config();
     loop {
         let start_time = Instant::now();
         time::sleep(duration).await;
@@ -89,13 +92,8 @@ async fn clear_file_after_duration(file_path: &str, duration: Duration) {
             .and_then(|mut file| file.write_all(b""))
         {
             eprintln!("Failed to clear file: {}", e);
-        } else if config.display_info.unwrap_or(false) {
-            println!(
-                "{} {} {:?}",
-                "File cleared".green(),
-                "after".blue(),
-                start_time.elapsed().yellow()
-            );
+        } else {
+            info!("File cleared after {:?}", start_time.elapsed());
         }
     }
 }
@@ -103,8 +101,9 @@ async fn clear_file_after_duration(file_path: &str, duration: Duration) {
 #[tokio::main]
 async fn main() {
     let config = declare_config();
+    env_logger::init();
     let total_duration = config::parse_duration(&config.expiration);
-
+    info!("Application started.");
     // Spawn a task to clear the file after the specified duration
     let log_name = config.log_name.expect("log_name issue").trim().to_string();
     tokio::spawn(async move {
@@ -136,22 +135,9 @@ async fn server() {
     .await
     .unwrap();
 
-    if config.display_info.unwrap_or(false) {
-        println!(
-            "{} {} {}:{}",
-            "Server listening".green(),
-            "on".blue(),
-            config.address.as_ref().unwrap().trim().yellow(),
-            config.port.unwrap().yellow()
-        );
-    }
-    println!("{}", "Press Ctrl-C to exit.".red());
-    println!(
-        "{} {} {}",
-        "File automatically clears".green(),
-        "after".blue(),
-        config.expiration.unwrap().trim().yellow()
-    );
+    info!("{} {} {}:{}", "Server listening", "on", config.address.as_ref().unwrap().trim(), config.port.unwrap());
+    info!("Press Ctrl-C to exit.");
+    info!("File automatically clears after {}", config.expiration.unwrap().trim());
     let server_task = tokio::spawn({
         async move {
             axum::serve(listener, router).await.unwrap();
@@ -160,7 +146,7 @@ async fn server() {
 
     // Wait for the shutdown signal
     signal::ctrl_c().await.expect("failed to listen for event");
-    println!("{}", "Shutting down...".red());
+    info!("Shutting down...");
     if config.history.unwrap_or(false) {
         write_to_history("Shutdown".to_string()).await;
     }
@@ -173,7 +159,7 @@ async fn write_to_log(body: String) -> impl IntoResponse {
     let data = format!("{} |: {}", Local::now().format("%D %I:%M:%S %p"), body);
 
     if config.display_data.unwrap_or(false) {
-        println!("{}", data.white());
+        info!("{}", data);
     }
 
     // Create parent directories if they do not exist
@@ -214,14 +200,14 @@ async fn clear_log() -> impl IntoResponse {
     let config = declare_config();
     match fs::write(config.log_name.as_ref().unwrap().trim(), "") {
         Ok(_) => {
-            println!("{}", "Log file cleared.".red());
+            info!("{}", "Log file cleared.");
             if config.history.unwrap_or(false) {
                 write_to_history("Log cleared.".to_string()).await;
             }
             "Log file cleared".into_response()
         }
         Err(e) => {
-            eprintln!("Error clearing log file: {}", e);
+            error!("Error clearing log file: {}", e);
             (
                 axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 "Error clearing log file",
@@ -264,7 +250,7 @@ async fn write_to_history(mut data: String) {
     if let Some(parent) = history_log_path.parent() {
         if !parent.exists() {
             if let Err(e) = create_dir_all(parent) {
-                eprintln!("Couldn't create directories: {}", e);
+                error!("Couldn't create directories: {}", e);
                 return;
             }
         }
@@ -278,7 +264,7 @@ async fn write_to_history(mut data: String) {
     {
         Ok(_) => {}
         Err(e) => {
-            eprintln!("Couldn't write to history: {}", e);
+            error!("Couldn't write to history: {}", e);
         }
     }
 }

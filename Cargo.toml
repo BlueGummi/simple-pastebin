@@ -4,12 +4,14 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-tokio = { version = "1", features = ["full"] }
-axum = "0.7.7"
-chrono = "0.4.38"
-toml = "0.8.19"
-serde = "1.0.210"
-config = "0.14.0"
-owo-colors = "3"
-tower-http =  { version = "0.6.1", features = ["fs"] }
-clap = { version = "4.5.20", features = ["derive"] }
+tokio = { version = "*", features = ["full"] }
+axum = "*"
+chrono = "*"
+toml = "*"
+serde = "*"
+config = "*"
+tower-http =  { version = "*", features = ["fs"] }
+clap = { version = "*", features = ["derive"] }
+log = "*"
+env_logger = "*"
+rand = "*"

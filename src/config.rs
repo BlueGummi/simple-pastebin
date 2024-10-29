@@ -1,5 +1,4 @@
 use serde::Deserialize;
-
 #[derive(Debug, Deserialize)]
 pub struct Config {
     pub address: Option<String>,
@@ -7,10 +6,10 @@ pub struct Config {
     pub expiration: Option<String>,
     pub log_name: Option<String>,
     pub display_data: Option<bool>,
-    pub display_info: Option<bool>,
     pub void_mode: Option<bool>,
     pub history: Option<bool>,
     pub history_log: Option<String>,
+    pub log_level: Option<String>,
 }
 impl Default for Config {
     fn default() -> Self {
@@ -20,10 +19,10 @@ impl Default for Config {
             expiration: None,
             log_name: None,
             display_data: Some(true),
-            display_info: Some(true),
             void_mode: Some(false),
             history: Some(false),
             history_log: None,
+            log_level: None,
         }
     }
 }

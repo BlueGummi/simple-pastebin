@@ -10,7 +10,9 @@ SQL?
 DONE: remove owo colors as we will use log
 
 TODO: proper tui/cli
-TODO: Serve the literal values in config.toml.to avoid dumb js parsing
+
+
+DONE: Serve the literal values in config.toml.to avoid dumb js parsing
 
 DONE: add clap for cmdline support
 

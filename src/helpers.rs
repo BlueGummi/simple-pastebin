@@ -1,7 +1,7 @@
-use std::fs;
-use log::{error, info};
-use axum::response::IntoResponse;
 use crate::*;
+use axum::response::IntoResponse;
+use log::{error, info};
+use std::fs;
 pub async fn clear_log() -> impl IntoResponse {
     let config = declare_config();
     match fs::write(config.log_name.as_ref().unwrap().trim(), "") {

@@ -1,8 +1,8 @@
 use crate::declare_config;
 use axum::{extract::Path, response::Html, response::IntoResponse};
+use regex::Regex;
 use rusqlite::{params, Connection, OptionalExtension, Result};
 use serde::{Deserialize, Serialize};
-
 use std::fs;
 #[derive(Debug, Serialize, Deserialize)]
 struct Paste {
@@ -53,17 +53,7 @@ pub async fn create_new_paste(content: String) -> impl IntoResponse {
 pub async fn serve_paste(Path(id): Path<i64>) -> impl IntoResponse {
     match get_paste(id).await {
         Ok(Some(paste)) => {
-            let template = fs::read_to_string("assets/paste.html").unwrap_or_else(|_| {
-                "<h1>Error</h1><p>Could not load the paste template.</p>".to_string()
-            });
-
-            let response_html = template
-                .replace("<span id=\"paste-id\"></span>", &paste.id.to_string())
-                .replace(
-                    "<div class=\"data\" id=\"fileContent\" aria-live=\"polite\"></div>",
-                    &format!("<pre>{}</pre>", escape_html(&paste.content)),
-                );
-
+            let response_html = render_paste_template(&paste.id, &paste.content);
             Html(response_html)
         }
         Ok(None) => {
@@ -73,6 +63,29 @@ pub async fn serve_paste(Path(id): Path<i64>) -> impl IntoResponse {
     }
 }
 
+fn render_paste_template(paste_id: &i64, paste_content: &str) -> String {
+    let template = fs::read_to_string("assets/paste.html")
+        .unwrap_or_else(|_| "<h1>Error</h1><p>Could not load the paste template.</p>".to_string());
+    let escaped_content = escape_html(paste_content);
+    let linked_content = convert_urls_to_links(&escaped_content);
+    template
+        .replace("<span id=\"paste-id\"></span>", &paste_id.to_string())
+        .replace(
+            "<div class=\"data\" id=\"fileContent\" aria-live=\"polite\"></div>",
+            &format!("<pre>{}</pre>", linked_content),
+        )
+}
+fn convert_urls_to_links(text: &str) -> String {
+    let url_regex = Regex::new(r"(https?://[^\s]+)").unwrap();
+    url_regex
+        .replace_all(text, |caps: &regex::Captures| {
+            format!(
+                "<a href=\"{}\" target=\"_blank\" rel=\"noopener noreferrer\">{}</a>",
+                &caps[0], &caps[0]
+            )
+        })
+        .to_string()
+}
 fn escape_html(content: &str) -> String {
     content
         .replace("&", "&amp;")

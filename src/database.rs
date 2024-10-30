@@ -1,10 +1,10 @@
 use crate::declare_config;
 use axum::{extract::Path, response::Html, response::IntoResponse};
+use log::info;
 use regex::Regex;
 use rusqlite::{params, Connection, OptionalExtension, Result};
 use serde::{Deserialize, Serialize};
 use std::fs;
-use log::info;
 #[derive(Debug, Serialize, Deserialize)]
 struct Paste {
     id: i64,
@@ -46,9 +46,7 @@ pub async fn create_new_paste(content: String) -> impl IntoResponse {
             let response_message = format!("Paste successful, view it at {}", link);
             Html(response_message)
         }
-        Err(_) => {
-            Html("Failed to create paste".to_string())
-        }
+        Err(_) => Html("Failed to create paste".to_string()),
     }
 }
 
@@ -74,7 +72,7 @@ fn render_paste_template(paste_id: &i64, paste_content: &str) -> String {
         .replace("<span id=\"paste-id\"></span>", &paste_id.to_string())
         .replace(
             "<div class=\"data\" id=\"fileContent\" aria-live=\"polite\"></div>",
-            &format!("{}", linked_content),
+            &linked_content.to_string(),
         )
 }
 fn convert_urls_to_links(text: &str) -> String {

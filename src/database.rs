@@ -68,11 +68,15 @@ fn render_paste_template(paste_id: &i64, paste_content: &str) -> String {
         .unwrap_or_else(|_| "<h1>Error</h1><p>Could not load the paste template.</p>".to_string());
     let escaped_content = escape_html(paste_content);
     let linked_content = convert_urls_to_links(&escaped_content);
+
     template
         .replace("<span id=\"paste-id\"></span>", &paste_id.to_string())
         .replace(
             "<div class=\"data\" id=\"fileContent\" aria-live=\"polite\"></div>",
-            &linked_content.to_string(),
+            &format!(
+                "<div class=\"data\" id=\"fileContent\" aria-live=\"polite\">{}</div>",
+                linked_content
+            ),
         )
 }
 fn convert_urls_to_links(text: &str) -> String {

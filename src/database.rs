@@ -1,8 +1,8 @@
 use crate::declare_config;
-use axum::{extract::Path, response::Html, response::IntoResponse, response::Json};
+use axum::{extract::Path, response::Html, response::IntoResponse};
 use rusqlite::{params, Connection, OptionalExtension, Result};
 use serde::{Deserialize, Serialize};
-use serde_json::json;
+
 use std::fs;
 #[derive(Debug, Serialize, Deserialize)]
 struct Paste {
@@ -31,7 +31,7 @@ async fn get_paste(id: i64) -> Result<Option<Paste>> {
         .optional()?;
     Ok(paste)
 }
-pub async fn create_new_paste(content: String) -> Json<serde_json::Value> {
+pub async fn create_new_paste(content: String) -> impl IntoResponse {
     let config = declare_config();
     match create_paste(content).await {
         Ok(id) => {
@@ -41,9 +41,12 @@ pub async fn create_new_paste(content: String) -> Json<serde_json::Value> {
                 config.port.unwrap(),
                 id
             );
-            Json(json!({ "link": link }))
+            let response_message = format!("Paste successful, view it at {}", link);
+            Html(response_message) // Use Html to return plain text as a response
         }
-        Err(_) => Json(json!({ "error": "Failed to create paste" })),
+        Err(_) => {
+            Html("Failed to create paste".to_string()) // Return an error message as plain text
+        }
     }
 }
 

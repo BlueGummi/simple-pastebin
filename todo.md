@@ -5,7 +5,7 @@ TODO: FIX MOBILE BUTTONS
 DONE: Use the log crate instead of whatever I'm doing
 
 TODO: Add functionality for creating custom pastes
-SQL?
+SQL? SQL!!!!
 
 DONE: remove owo colors as we will use log
 

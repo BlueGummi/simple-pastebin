@@ -15,4 +15,4 @@ clap = { version = "*", features = ["derive"] }
 log = "*"
 env_logger = "*"
 rusqlite = { version = "*", features = ["bundled"] }
-serde_json = "*"
+

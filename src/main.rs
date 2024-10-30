@@ -6,13 +6,13 @@ use axum::{
 use chrono::Local;
 use config::Config;
 use std::path::Path;
+use std::time::{Duration, Instant};
 use std::{fs, fs::create_dir_all, fs::OpenOptions, io::Write};
 use tokio::{signal, time};
-use std::time::{Duration, Instant};
 mod config;
+use clap::Parser;
+use log::{debug, error, info, trace, warn};
 use tower_http::services::ServeDir;
-use clap::{Parser};
-use log::{info, warn, error, debug, trace};
 
 #[derive(Parser)]
 struct Cli {
@@ -54,7 +54,6 @@ struct Cli {
 }
 
 pub fn declare_config() -> Config {
-
     let config_content = fs::read_to_string("config.toml").unwrap_or_else(|_| {
         eprintln!("Failed to read config.toml. Using default configuration.");
         String::new()
@@ -72,7 +71,9 @@ pub fn declare_config() -> Config {
     config.history = cli.history.or(config.history);
     config.history_log = cli.history_log.or(config.history_log);
     config.log_level.get_or_insert("info".to_string());
-    config.address.get_or_insert_with(|| "127.0.0.1".to_string());
+    config
+        .address
+        .get_or_insert_with(|| "127.0.0.1".to_string());
     config.port.get_or_insert(6060);
     config.expiration.get_or_insert("10m".to_string());
     config.log_name.get_or_insert("input.log".to_string());
@@ -135,9 +136,18 @@ async fn server() {
     .await
     .unwrap();
 
-    info!("{} {} {}:{}", "Server listening", "on", config.address.as_ref().unwrap().trim(), config.port.unwrap());
+    info!(
+        "{} {} {}:{}",
+        "Server listening",
+        "on",
+        config.address.as_ref().unwrap().trim(),
+        config.port.unwrap()
+    );
     info!("Press Ctrl-C to exit.");
-    info!("File automatically clears after {}", config.expiration.unwrap().trim());
+    info!(
+        "File automatically clears after {}",
+        config.expiration.unwrap().trim()
+    );
     let server_task = tokio::spawn({
         async move {
             axum::serve(listener, router).await.unwrap();
@@ -233,7 +243,11 @@ async fn serve_log() -> impl IntoResponse {
 
 async fn serve_config() -> impl IntoResponse {
     let config = declare_config();
-    format!("{}\n{}", config.expiration.unwrap(), config.log_name.unwrap())
+    format!(
+        "{}\n{}",
+        config.expiration.unwrap(),
+        config.log_name.unwrap()
+    )
 }
 
 async fn write_to_history(mut data: String) {

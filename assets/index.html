@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simple Pastebin</title>
     <link rel="stylesheet" href="assets/styles.css">
+    <link rel="stylesheet" href="assets/buttons.css">
 </head>
 <body class="light">
     <div class="container">
@@ -24,14 +25,20 @@
 
     <button id="newPasteButton">New Paste</button>
 
-
     <h1>Main Pastebin</h1>
-    <div id="expirationMessage">(Clears every X)</div>
-    <button id="downloadButton">Download</button>
+    <div id="expirationMessage" style="text-align: center;">(Clears every X)</div>
+    
+    <div class="button-container" style="text-align: center;">
+        <a href="#" id="downloadButton" aria-label="Download">
+            <img src="assets/download.svg" alt="Download Icon" width="20" height="20">
+        </a>
+        <a href="#" id="deleteButton" aria-label="Delete">
+            <img src="assets/delete.svg" alt="Delete Icon" width="20" height="20">
+        </a>
+    </div>
 
     <div class="container">
         <div class="left-box" id="leftBox">
-            <button id="deleteButton">Delete</button>
             <div class="timestamps" id="timestamps" aria-live="polite">Loading...</div>
         </div>
         <div class="data" id="fileContent" aria-live="polite">Loading...</div>

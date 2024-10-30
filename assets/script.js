@@ -1,4 +1,3 @@
-let fileName;
 let previousLogData = ''; 
 
 let checkbox = document.getElementById('checkbox');
@@ -21,18 +20,12 @@ checkbox.addEventListener('change', () => {
 });
 
 async function loadConfig() {
-    console.log("Loading config...");
     try {
         let response = await fetch('/config');
-        console.log("Config response received:", response);
         if (!response.ok) throw new Error('Network response was not ok');
         let text = await response.text();
-        console.log("Config text:", text);
-
         let lines = text.split('\n');
         let expirationValue = lines[0].trim(); 
-        fileName = lines.length > 1 ? lines[1].trim() : 'input.log'; 
-
         displayExpirationMessage(expirationValue);
     } catch (error) {
         document.getElementById('expirationMessage').textContent = 'Error loading expiration';
@@ -54,15 +47,12 @@ function displayExpirationMessage(expirationValue) {
 async function loadLog() {
     try {
         await loadConfig(); 
-        console.log("Fetching log file:", fileName); 
 
-        let response = await fetch(fileName);
-        console.log("Log response status:", response.status); 
+        let response = await fetch('/log');
 
         if (!response.ok) throw new Error('Network response was not ok');
 
         let text = await response.text();
-        console.log("Log file content:", text); 
 
         if (text !== previousLogData) {
             previousLogData = text; 
@@ -74,6 +64,7 @@ async function loadLog() {
         console.error('Error loading log:', error);
     }
 }
+
 function parseLogData(data) {
     let lines = data.split('\n');
     let timestamps = [];
@@ -107,13 +98,13 @@ function convertUrlsToLinks(text) {
 }
 
 function downloadLog() {
-    fetch(fileName)
+    fetch('/log')
         .then(response => response.blob())
         .then(blob => {
             let url = URL.createObjectURL(blob);
             let a = document.createElement('a');
             a.href = url;
-            a.download = fileName; 
+            a.download = 'log'; 
             document.body.appendChild(a);
             a.click();
             a.remove();
@@ -134,6 +125,69 @@ async function deleteLog() {
     }
 }
 
+async function createNewPaste(inputData) {
+    console.log("Creating new paste with data:", inputData); 
+    try {
+        let response = await fetch('/new', { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/plain',
+            },
+            body: inputData 
+        });
+
+        console.log("Response received:", response); 
+        if (!response.ok) throw new Error('Network response was not ok');
+
+        let message = await response.text(); 
+        document.getElementById('newPasteMessage').textContent = message; 
+        loadLog(); 
+    } catch (error) {
+        console.error('Error creating new paste:', error);
+        document.getElementById('newPasteMessage').textContent = 'Error creating new paste.';
+    }
+}
+
+document.getElementById('inputForm').addEventListener('submit', async function(event) {
+    event.preventDefault(); 
+    const inputData = document.getElementById('input').value; 
+    console.log('Form submitted with data:', inputData); 
+
+    try {
+        const response = await fetch('/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/plain',
+            },
+            body: inputData
+        });
+
+        if (response.ok) {
+            const text = await response.text();
+            document.getElementById('newPasteMessage').textContent = text; 
+            loadLog(); 
+        } else {
+            console.error('Error:', response.statusText);
+            document.getElementById('newPasteMessage').textContent = 'Error submitting form.';
+        }
+    } catch (error) {
+        console.error('Fetch error:', error);
+        document.getElementById('newPasteMessage').textContent = 'Error submitting form.';
+    }
+
+    document.getElementById('input').value = ''; 
+});
+
+document.getElementById('newPasteButton').addEventListener('click', async () => {
+    const inputData = document.getElementById('input').value; 
+    if (inputData.trim() === "") {
+        document.getElementById('newPasteMessage').textContent = 'Please enter some text.';
+        return;
+    }
+    await createNewPaste(inputData); 
+    document.getElementById('input').value = ''; 
+});
+
 document.getElementById('deleteButton').addEventListener('click', deleteLog);
 document.getElementById('downloadButton').addEventListener('click', downloadLog); 
 
@@ -141,39 +195,6 @@ function autoResize(textarea) {
     textarea.style.height = 'auto';
     textarea.style.height = `${textarea.scrollHeight}px`;
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("Thing load");
-    document.getElementById('inputForm').addEventListener('submit', async function(event) {
-        event.preventDefault();
-        const inputData = document.getElementById('input').value;
-        console.log('Form submitted with data:', inputData);
-
-        try {
-            const response = await fetch('/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'text/plain',
-                },
-                body: inputData
-            });
-
-            console.log('Response status:', response.status);
-
-            if (response.ok) {
-                const text = await response.text();
-                console.log('Server response:', text);
-                loadLog();
-            } else {
-                console.error('Error:', response.statusText);
-            }
-        } catch (error) {
-            console.error('Fetch error:', error);
-        }
-
-        document.getElementById('input').value = '';
-    });
-});
 
 window.onload = () => {
     loadConfig(); 

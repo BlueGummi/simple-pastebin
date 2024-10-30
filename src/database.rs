@@ -4,6 +4,7 @@ use regex::Regex;
 use rusqlite::{params, Connection, OptionalExtension, Result};
 use serde::{Deserialize, Serialize};
 use std::fs;
+use log::info;
 #[derive(Debug, Serialize, Deserialize)]
 struct Paste {
     id: i64,
@@ -35,6 +36,7 @@ pub async fn create_new_paste(content: String) -> impl IntoResponse {
     let config = declare_config();
     match create_paste(content).await {
         Ok(id) => {
+            info!("Paste number {} created.", id);
             let link = format!(
                 "http://{}:{}/{}",
                 config.address.unwrap(),
@@ -42,10 +44,10 @@ pub async fn create_new_paste(content: String) -> impl IntoResponse {
                 id
             );
             let response_message = format!("Paste successful, view it at {}", link);
-            Html(response_message) // Use Html to return plain text as a response
+            Html(response_message)
         }
         Err(_) => {
-            Html("Failed to create paste".to_string()) // Return an error message as plain text
+            Html("Failed to create paste".to_string())
         }
     }
 }
@@ -72,7 +74,7 @@ fn render_paste_template(paste_id: &i64, paste_content: &str) -> String {
         .replace("<span id=\"paste-id\"></span>", &paste_id.to_string())
         .replace(
             "<div class=\"data\" id=\"fileContent\" aria-live=\"polite\"></div>",
-            &format!("<pre>{}</pre>", linked_content),
+            &format!("{}", linked_content),
         )
 }
 fn convert_urls_to_links(text: &str) -> String {

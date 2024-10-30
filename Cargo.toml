@@ -16,3 +16,4 @@ log = "*"
 env_logger = "*"
 rusqlite = { version = "*", features = ["bundled"] }
 regex = "*"
+askama = { version = "*", features = ["serde"] }

@@ -62,10 +62,7 @@ async fn server() {
         .route("/:id", get(serve_paste))
         .nest_service("/assets", ServeDir::new("assets"));
     if !config.void_mode.unwrap_or(false) {
-        router = router.route(
-            &(format!("/{}", config.log_name.unwrap().trim())),
-            get(serve_log),
-        );
+        router = router.route("/log", get(serve_log));
         router = router.route("/", post(write_to_log));
     }
     let listener = tokio::net::TcpListener::bind(format!(
@@ -83,6 +80,7 @@ async fn server() {
         config.address.as_ref().unwrap().trim(),
         config.port.unwrap()
     );
+    info!("Main log at {}", config.log_name.as_ref().unwrap());
     info!("Press Ctrl-C to exit.");
     info!(
         "File automatically clears after {}",

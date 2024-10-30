@@ -14,4 +14,5 @@ tower-http =  { version = "*", features = ["fs"] }
 clap = { version = "*", features = ["derive"] }
 log = "*"
 env_logger = "*"
-rand = "*"
+rusqlite = { version = "*", features = ["bundled"] }
+serde_json = "*"

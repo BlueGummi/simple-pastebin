@@ -4,82 +4,19 @@ use axum::{
     Router,
 };
 use chrono::Local;
-use config::Config;
+use rusqlite::Connection;
 use std::path::Path;
 use std::time::{Duration, Instant};
-use std::{fs, fs::create_dir_all, fs::OpenOptions, io::Write};
+use std::{fs::create_dir_all, fs::OpenOptions, io::Write};
 use tokio::{signal, time};
 mod config;
-use clap::Parser;
-use log::{debug, error, info, trace, warn};
+use crate::config::*;
+mod database;
+use database::*;
+mod helpers;
+use crate::helpers::*;
+use log::{error, info};
 use tower_http::services::ServeDir;
-
-#[derive(Parser)]
-struct Cli {
-    /// Address to bind to
-    #[arg(short, long)]
-    address: Option<String>,
-
-    /// Port to listen on
-    #[arg(short, long)]
-    port: Option<u16>,
-
-    /// Expiration duration
-    #[arg(short, long)]
-    expiration: Option<String>,
-
-    /// Log file name
-    #[arg(short, long)]
-    log_name: Option<String>,
-
-    /// Display data
-    #[arg(long)]
-    display_data: Option<bool>,
-
-    /// Void mode flag
-    #[arg(long)]
-    void_mode: Option<bool>,
-
-    /// History flag
-    #[arg(long)]
-    history: Option<bool>,
-
-    /// History log name
-    #[arg(long)]
-    history_log: Option<String>,
-
-    /// Set the log level
-    #[arg(long)]
-    log_level: Option<String>,
-}
-
-pub fn declare_config() -> Config {
-    let config_content = fs::read_to_string("config.toml").unwrap_or_else(|_| {
-        eprintln!("Failed to read config.toml. Using default configuration.");
-        String::new()
-    });
-
-    let mut config: Config = toml::de::from_str(&config_content).unwrap_or_default();
-    let cli = Cli::parse();
-    config.address = cli.address.or(config.address);
-    config.port = cli.port.or(config.port);
-    config.expiration = cli.expiration.or(config.expiration);
-    config.log_name = cli.log_name.or(config.log_name);
-    config.log_level = cli.log_level.or(config.log_level);
-    config.display_data = cli.display_data.or(config.display_data);
-    config.void_mode = cli.void_mode.or(config.void_mode);
-    config.history = cli.history.or(config.history);
-    config.history_log = cli.history_log.or(config.history_log);
-    config.log_level.get_or_insert("info".to_string());
-    config
-        .address
-        .get_or_insert_with(|| "127.0.0.1".to_string());
-    config.port.get_or_insert(6060);
-    config.expiration.get_or_insert("10m".to_string());
-    config.log_name.get_or_insert("input.log".to_string());
-    std::env::set_var("RUST_LOG", config.log_level.as_ref().unwrap());
-    config
-}
 
 async fn clear_file_after_duration(file_path: &str, duration: Duration) {
     loop {
@@ -103,6 +40,7 @@ async fn clear_file_after_duration(file_path: &str, duration: Duration) {
 async fn main() {
     let config = declare_config();
     env_logger::init();
+    let _ = Connection::open("pastes.db");
     let total_duration = config::parse_duration(&config.expiration);
     info!("Application started.");
     // Spawn a task to clear the file after the specified duration
@@ -120,6 +58,8 @@ async fn server() {
         .route("/", get(serve_form))
         .route("/clear", post(clear_log))
         .route("/config", get(serve_config))
+        .route("/new", post(create_new_paste))
+        .route("/:id", get(serve_paste))
         .nest_service("/assets", ServeDir::new("assets"));
     if !config.void_mode.unwrap_or(false) {
         router = router.route(
@@ -206,53 +146,13 @@ async fn write_to_log(body: String) -> impl IntoResponse {
     }
 }
 
-async fn clear_log() -> impl IntoResponse {
-    let config = declare_config();
-    match fs::write(config.log_name.as_ref().unwrap().trim(), "") {
-        Ok(_) => {
-            info!("{}", "Log file cleared.");
-            if config.history.unwrap_or(false) {
-                write_to_history("Log cleared.".to_string()).await;
-            }
-            "Log file cleared".into_response()
-        }
-        Err(e) => {
-            error!("Error clearing log file: {}", e);
-            (
-                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-                "Error clearing log file",
-            )
-                .into_response()
-        }
-    }
-}
-
-async fn serve_form() -> Html<String> {
-    let content = fs::read_to_string("assets/index.html")
-        .unwrap_or_else(|_| "Error loading HTML file".to_string());
-    Html(content)
-}
-
-async fn serve_log() -> impl IntoResponse {
-    let config = declare_config();
-    match fs::read_to_string(config.log_name.as_ref().unwrap().trim()) {
-        Ok(content) => content,
-        Err(_) => "Error reading log file".to_string(),
-    }
-}
-
-async fn serve_config() -> impl IntoResponse {
-    let config = declare_config();
-    format!(
-        "{}\n{}",
-        config.expiration.unwrap(),
-        config.log_name.unwrap()
-    )
-}
-
 async fn write_to_history(mut data: String) {
     let config = declare_config();
-    data = format!("Event at {} |: {}", Local::now().format("%D %I:%M:%S %p"), data);
+    data = format!(
+        "Event at {} |: {}",
+        Local::now().format("%D %I:%M:%S %p"),
+        data
+    );
 
     let history_log_path = Path::new(config.history_log.as_ref().unwrap().trim());
     if let Some(parent) = history_log_path.parent() {

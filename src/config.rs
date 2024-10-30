@@ -1,4 +1,6 @@
+use clap::Parser;
 use serde::Deserialize;
+use std::fs;
 #[derive(Debug, Deserialize)]
 pub struct Config {
     pub address: Option<String>,
@@ -26,6 +28,77 @@ impl Default for Config {
         }
     }
 }
+pub fn declare_config() -> Config {
+    let config_content = fs::read_to_string("config.toml").unwrap_or_else(|_| {
+        eprintln!("Failed to read config.toml. Using default configuration.");
+        String::new()
+    });
+
+    let mut config: Config = toml::de::from_str(&config_content).unwrap_or_default();
+    let cli = Cli::parse();
+    config.address = cli.address.or(config.address);
+    config.port = cli.port.or(config.port);
+    config.expiration = cli.expiration.or(config.expiration);
+    config.log_name = cli.log_name.or(config.log_name);
+    config.log_level = cli.log_level.or(config.log_level);
+    config.display_data = cli.display_data.or(config.display_data);
+    config.void_mode = cli.void_mode.or(config.void_mode);
+    config.history = cli.history.or(config.history);
+    config.history_log = cli.history_log.or(config.history_log);
+    config.log_level.get_or_insert("info".to_string());
+    config
+        .address
+        .get_or_insert_with(|| "127.0.0.1".to_string());
+    config.port.get_or_insert(6060);
+    config.expiration.get_or_insert("10m".to_string());
+    config.log_name.get_or_insert("input.log".to_string());
+    std::env::set_var("RUST_LOG", config.log_level.as_ref().unwrap());
+    config
+}
+
+#[derive(Parser)]
+struct Cli {
+    /// Address to bind to
+    #[arg(short, long)]
+    address: Option<String>,
+
+    /// Port to listen on
+    #[arg(short, long)]
+    port: Option<u16>,
+
+    /// Expiration duration
+    #[arg(short, long)]
+    expiration: Option<String>,
+
+    /// Log file name
+    #[arg(short, long)]
+    log_name: Option<String>,
+
+    /// Directory for pastes
+    #[arg(long)]
+    paste_dir: Option<String>,
+
+    /// Display data
+    #[arg(long)]
+    display_data: Option<bool>,
+
+    /// Void mode flag
+    #[arg(long)]
+    void_mode: Option<bool>,
+
+    /// History flag
+    #[arg(long)]
+    history: Option<bool>,
+
+    /// History log name
+    #[arg(long)]
+    history_log: Option<String>,
+
+    /// Set the log level
+    #[arg(long)]
+    log_level: Option<String>,
+}
+
 pub fn parse_duration(expiration: &Option<String>) -> u64 {
     let mut total_seconds = 0;
     let mut number = String::new();

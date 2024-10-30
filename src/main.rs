@@ -252,11 +252,7 @@ async fn serve_config() -> impl IntoResponse {
 
 async fn write_to_history(mut data: String) {
     let config = declare_config();
-    data = format!(
-        "Event at {} |: {}",
-        Local::now().format("%D %I:%M:%S %p"),
-        data
-    );
+    data = format!("Event at {} |: {}", Local::now().format("%D %I:%M:%S %p"), data);
 
     let history_log_path = Path::new(config.history_log.as_ref().unwrap().trim());
     if let Some(parent) = history_log_path.parent() {

@@ -1,7 +1,6 @@
 let fileName;
-let previousLogData = ''; // To track previous log data
+let previousLogData = ''; 
 
-// Theme changer
 let checkbox = document.getElementById('checkbox');
 let body = document.body;
 let icon = document.getElementById('icon');
@@ -21,39 +20,24 @@ checkbox.addEventListener('change', () => {
     }
 });
 
-// Load the expiration value and log name from config.toml
 async function loadConfig() {
+    console.log("Loading config...");
     try {
-        let response = await fetch('config.toml');
+        let response = await fetch('/config');
+        console.log("Config response received:", response);
         if (!response.ok) throw new Error('Network response was not ok');
         let text = await response.text();
-        let expirationValue = parseExpiration(text);
+        console.log("Config text:", text);
+
+        let lines = text.split('\n');
+        let expirationValue = lines[0].trim(); 
+        fileName = lines.length > 1 ? lines[1].trim() : 'input.log'; 
+
         displayExpirationMessage(expirationValue);
-        fileName = parseFileName(text);
     } catch (error) {
         document.getElementById('expirationMessage').textContent = 'Error loading expiration';
+        console.error('Error loading config:', error);
     }
-}
-
-function parseFileName(tomlText) {
-    let logNameMatch = tomlText.match(/log_name\s*=\s*"(.*?)"/);
-    if (logNameMatch) {
-        let logName = removeQuotes(logNameMatch[1]);
-        if (logName.startsWith('#')) {
-            return 'input.log';
-        }
-        return logName;
-    }
-    return 'input.log';
-}
-
-function removeQuotes(text) {
-    return text.replace(/^"|"$/g, '');
-}
-
-function parseExpiration(tomlText) {
-    let expirationMatch = tomlText.match(/expiration\s*=\s*"(.*?)"/);
-    return expirationMatch ? expirationMatch[1] : '10m';
 }
 
 function displayExpirationMessage(expirationValue) {
@@ -67,24 +51,29 @@ function displayExpirationMessage(expirationValue) {
     document.getElementById('expirationMessage').textContent = ` (Clears every ${formattedParts.join(', ')})`;
 }
 
-// Load log with change detection
 async function loadLog() {
     try {
+        await loadConfig(); 
+        console.log("Fetching log file:", fileName); 
+
         let response = await fetch(fileName);
+        console.log("Log response status:", response.status); 
+
         if (!response.ok) throw new Error('Network response was not ok');
+
         let text = await response.text();
-        
-        // Check if the log has changed
+        console.log("Log file content:", text); 
+
         if (text !== previousLogData) {
-            previousLogData = text; // Update previous log data
-            parseLogData(text); // Only parse if there is a change
+            previousLogData = text; 
+            parseLogData(text); 
         }
     } catch (error) {
         document.getElementById('fileContent').textContent = 'Error loading log';
         document.getElementById('timestamps').textContent = '';
+        console.error('Error loading log:', error);
     }
 }
-
 function parseLogData(data) {
     let lines = data.split('\n');
     let timestamps = [];
@@ -97,7 +86,6 @@ function parseLogData(data) {
             let timestamp = line.substring(0, match[0].length - 3).trim();
             let contentText = line.substring(match[0].length).trim();
 
-            // Convert URLs in contentText to <a> tags
             contentText = convertUrlsToLinks(contentText);
 
             timestamps.push(timestamp);
@@ -108,12 +96,10 @@ function parseLogData(data) {
         }
     });
 
-    // Display timestamps and content
     document.getElementById('timestamps').textContent = timestamps.join('\n');
-    document.getElementById('fileContent').innerHTML = content.join('<br>'); // Use innerHTML to render <a> tags
+    document.getElementById('fileContent').innerHTML = content.join('<br>'); 
 }
 
-// Function to convert URLs in text to anchor tags
 function convertUrlsToLinks(text) {
     return text.replace(/(https?:\/\/[^\s]+)/g, url => 
         `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`
@@ -136,7 +122,6 @@ function downloadLog() {
         .catch(error => console.error('Error downloading log:', error));
 }
 
-// Delete button
 async function deleteLog() {
     if (confirm("Are you sure you want to delete the whole pastebin?")) {
         try {
@@ -190,9 +175,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Load configuration and initial log on window load
 window.onload = () => {
-    loadConfig(); // Load the configuration
-    loadLog(); // Load the log
+    loadConfig(); 
+    loadLog(); 
 };
 setInterval(loadLog, 500);

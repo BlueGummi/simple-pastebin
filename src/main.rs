@@ -118,7 +118,7 @@ async fn server() {
     let mut router = Router::new()
         .route("/", get(serve_form))
         .route("/clear", post(clear_log))
-        .route("/config.toml", get(serve_config))
+        .route("/config", get(serve_config))
         .nest_service("/assets", ServeDir::new("assets"));
     if !config.void_mode.unwrap_or(false) {
         router = router.route(
@@ -232,10 +232,8 @@ async fn serve_log() -> impl IntoResponse {
 }
 
 async fn serve_config() -> impl IntoResponse {
-    match fs::read_to_string("config.toml") {
-        Ok(content) => content,
-        Err(_) => "Error reading config.toml".to_string(),
-    }
+    let config = declare_config();
+    format!("{}\n{}", config.expiration.unwrap(), config.log_name.unwrap())
 }
 
 async fn write_to_history(mut data: String) {

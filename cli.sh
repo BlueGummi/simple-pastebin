@@ -1,14 +1,15 @@
 #!/bin/bash
 
-echo ""
-echo "Commands:"
-echo "  new"
-echo "  get <number>"
-echo "  add"
-echo "  delete <number>"
-echo "  view"
-echo "  clear"
-echo "  exit"
+clear_screen() {
+    clear
+    echo ""
+    echo "Commands:"
+    echo "  new <optional: main>"
+    echo "  get <number or "main">"
+    echo "  delete <number or "main">"
+    echo "  exit"
+}
+clear_screen
 SERVER_FILE="server.txt"
 trim_whitespace() {
     echo "$1" | xargs
@@ -34,32 +35,36 @@ fi
 
 while true; do
     read -p "> " command arg1
-
     case $command in
         new)
-            read -p "Enter data for new: " data
-            curl -X POST -d "$data" "$SERVER_LINK/new"
-            echo ""
+            if [[ "$arg1" == "main" ]]; then
+                read -p "Enter data for main: " data
+                curl -X POST -d "$data" "$SERVER_LINK"
+                echo ""
+            else
+                read -p "Enter data for new: " data
+                curl -X POST -d "$data" "$SERVER_LINK/new"
+                echo ""
+            fi
             ;;
         get)
-            curl "$SERVER_LINK/raw/$arg1"
-            echo ""
-            ;;
-        add)
-            read -p "Enter data to add: " data
-            curl -X POST -d "$data" "$SERVER_LINK"
+            if [[ "$arg1" =~ ^[0-9]+$ ]]; then
+                curl "$SERVER_LINK/raw/$arg1"
+            elif [[ "$arg1" == "main" ]]; then
+                curl "$SERVER_LINK/log"
+            else
+                echo "Invalid argument for get."
+            fi
             echo ""
             ;;
         delete)
-            curl -X POST "$SERVER_LINK/$arg1/delete"
-            echo ""
-            ;;
-        clear)
-            curl -X POST "$SERVER_LINK/clear"
-            echo ""
-            ;;
-        view)
-            curl "$SERVER_LINK/log"
+            if [[ "$arg1" =~ ^[0-9]+$ ]]; then
+                curl -X POST "$SERVER_LINK/$arg1/delete"
+            elif [[ "$arg1" == "main" ]]; then
+                curl -X POST "$SERVER_LINK/clear"
+            else
+                echo "Invalid argument for delete."
+            fi
             echo ""
             ;;
         exit)

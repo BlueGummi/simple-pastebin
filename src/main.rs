@@ -70,7 +70,7 @@ async fn server() {
     match std::net::TcpListener::bind(("127.0.0.1", config.port.unwrap())) {
         Ok(_) => (),
         Err(_) => {
-            error!("Port cannot be bound!");
+            error!("Port {} cannot be bound!", config.port.unwrap());
             std::process::exit(1);
         }
     }

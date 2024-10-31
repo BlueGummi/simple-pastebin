@@ -69,7 +69,7 @@ pub async fn delete_paste(Path(id): Path<i64>) -> impl IntoResponse {
 
     if result > 0 {
         info!("Paste number {} deleted.", id);
-        Html("Paste deleted successfully.".to_string())
+        Html(format!("Paste {} deleted successfully.", id).to_string())
     } else {
         Html("Paste not found.".to_string())
     }

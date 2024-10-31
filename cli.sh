@@ -38,16 +38,13 @@ else
 fi
 
 history=()
-history_index=0
-
+history_index=-1
 while true; do
 	read -e -p "> " command arg1 arg2
-
 	if [[ -n "$command" ]]; then
 		history+=("$command $arg1 $arg2")
 		history_index=${#history[@]}
 	fi
-
 	case $command in
 	clear)
 		clear
@@ -67,8 +64,6 @@ while true; do
 			fi
 			data+="$line"$'\n'
 		done
-
-		# Post the data to the server
 		if [[ "$arg1" == "main" ]]; then
 			curl -X POST -d "$data" "$SERVER_LINK"
 		else
@@ -97,10 +92,9 @@ while true; do
 			echo "Invalid argument for delete."
 		fi
 		echo ""
+		echo ""
 		;;
 	exit)
-		echo "Exiting..."
-		echo ""
 		break
 		;;
 	help)

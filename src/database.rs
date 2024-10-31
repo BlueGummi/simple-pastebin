@@ -30,7 +30,21 @@ async fn get_paste(id: i64) -> Result<Option<Paste>> {
             })
         })
         .optional()?;
+    println!("{:?}", paste);
     Ok(paste)
+}
+pub async fn serve_raw(Path(id): Path<i64>) -> impl IntoResponse {
+    match get_paste(id).await {
+        Ok(Some(paste)) => {
+            Html(paste.content)
+        }
+        Ok(None) => {
+            Html("The requested paste does not exist".to_string())
+        }
+        Err(_) => {
+            Html("Could not retrieve the paste.".to_string())
+        }
+    }
 }
 pub async fn create_new_paste(content: String) -> impl IntoResponse {
     let config = declare_config();

@@ -6,6 +6,7 @@
     <title>Simple Pastebin</title>
     <link rel="stylesheet" href="assets/styles.css">
     <link rel="stylesheet" href="assets/buttons.css">
+    <link rel="stylesheet" href="assets/toggle.css">
 </head>
 <body class="light">
     <div class="container">
@@ -20,22 +21,14 @@
         <textarea id="input" name="input" required rows="1" oninput="autoResize(this)" placeholder="Type your paste here..."></textarea>
         <br>
         <div id="newPasteMessage"></div>
-        <input type="submit" id="submitButton" value="Submit">
+        <div class="button-container">
+            <input type="submit" id="submitButton" value="Submit">
+            <button id="newPasteButton">New</button>
+        </div>
     </form>
 
-    <button id="newPasteButton">New Paste</button>
-
     <h1>Main Pastebin</h1>
-    <div id="expirationMessage" style="text-align: center;">(Clears every X)</div>
-    
-    <div class="button-container" style="text-align: center;">
-        <a href="#" id="downloadButton" aria-label="Download">
-            <img src="assets/download.svg" alt="Download Icon" width="20" height="20">
-        </a>
-        <a href="#" id="deleteButton" aria-label="Delete">
-            <img src="assets/delete.svg" alt="Delete Icon" width="20" height="20">
-        </a>
-    </div>
+    <div id="expirationMessage" style="text-align: center;">(Expires after)</div>
 
     <div class="container">
         <div class="left-box" id="leftBox">
@@ -43,6 +36,17 @@
         </div>
         <div class="data" id="fileContent" aria-live="polite">Loading...</div>
     </div>
+            
+    <div class="button-container" style="text-align: center; margin-top: 20px;">
+        <a href="#" id="downloadButton" aria-label="Download">
+            <img src="assets/download.svg" alt="Download Icon" class="icon">
+        </a>
+        <span style="width: 100px;"></span> 
+        <a href="#" id="deleteButton" aria-label="Delete">
+            <img src="assets/delete.svg" alt="Delete Icon" class="icon">
+        </a>
+    </div>
+    
 
     <script type="text/javascript" src="assets/script.js"></script>
 </body>

@@ -8,40 +8,58 @@ button {
     padding: 0;
 }
 
-#submitButton {
-    padding: 10px 20px;
-    color: white;
-    background-color: green;
-    text-transform: uppercase;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 16px;
-    width: 100%;
-    max-width: 200px;
-    margin: 0 auto;
-    margin-bottom: 10px;
+body {
+    display: flex;
+    justify-content: center;
+    margin: 0;
+}
+
+#inputForm {
+    align-items: center;
 }
 
 .button-container {
     display: flex;
+    gap: 10px;
+    margin-top: -30px;
     justify-content: center;
-    margin: 10px 0;
 }
 
+#submitButton, #newPasteButton {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: darkcyan;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 25px;
+    font-weight: normal;
+    min-width: 100px;
+}
+
+#submitButton:hover, #newPasteButton:hover {
+    background-color: darkblue;
+}
 .button-container a {
-    margin: 0 5px;
+    margin: 10px;
     display: inline-flex;
+    margin-bottom: -50px;
 }
 
 #downloadButton,
 #deleteButton {
     background: none;
     padding: 0;
+    margin: 0;
+    margin-bottom: -50px;
 }
 
 .icon {
-    width: 20px;
-    height: 20px;
+    width: 30px;
+    height: 30px;
 }
 button {
     border: none;
@@ -49,94 +67,4 @@ button {
     color: white;
     cursor: pointer;
     font-weight: bold;
-}
-
-#submitButton {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 20px;
-    color: white;
-    background-color: green;
-    text-transform: uppercase;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 16px;
-    width: 100%;
-    max-width: 200px;
-    margin: 0 auto;
-    margin-bottom: 10px;
-}
-
-#themeToggle {
-    position: absolute;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    padding: 50px;
-}
-
-.toggle {
-    display: flex;
-    align-items: center;
-    width: 60px;
-    height: 34px;
-    right: 0;
-    background-color: #ccc;
-    border-radius: 34px; 
-    transition: background-color 0.3s;
-    margin-left: 85%; 
-}
-
-.toggle input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.slider {
-    position: relative;
-
-    width: 100%;
-    height: 100%;
-    border-radius: 34px; 
-    transition: background-color 0.3s;
-}
-
-.slider::before {
-    content: "";
-    position: absolute;
-    height: 34px;
-    width: 34px;
-    bottom: 0; 
-    background-color: white;
-    border-radius: 50%;
-    transition: transform 0.3s;
-}
-
-input:checked + .slider {
-    background-color: #4caf50; 
-}
-
-input:checked + .slider::before {
-    transform: translateX(26px);
-}
-
-.icon {
-    font-size: 24px; 
-    margin-right: 10px;
-    padding-bottom: 50px;
-    top: 0;
-    right: 0;
-    left: 0;
-}
-
-h1 {
-    font-size: 20px;
-    margin-bottom: 5px;
-    text-align: center;
-}
-
-#expirationMessage {
-    font-size: 16px;
-    margin-bottom: 20px;
 }

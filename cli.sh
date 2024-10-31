@@ -7,6 +7,7 @@ echo "  new"
 echo "  get <number>"
 echo "  add"
 echo "  delete <number>"
+echo "  view"
 echo "  clear"
 echo "  exit"
 
@@ -40,6 +41,10 @@ while true; do
         clear)
             curl -X POST "$server_link/clear"
 	    echo ""
+            ;;
+	view)
+	    curl "$server_link/log"
+            echo ""
             ;;
         exit)
             echo "Exiting..."

@@ -49,7 +49,24 @@ pub async fn create_new_paste(content: String) -> impl IntoResponse {
         Err(_) => Html("Failed to create paste".to_string()),
     }
 }
+pub async fn delete_paste(Path(id): Path<i64>) -> impl IntoResponse {
+    let conn = match Connection::open("pastes.db") {
+        Ok(conn) => conn,
+        Err(_) => return Html("Database connection failed.".to_string()),
+    };
 
+    let result = match conn.execute("DELETE FROM pastes WHERE id = ?1", params![id]) {
+        Ok(count) => count,
+        Err(_) => return Html("Failed to delete paste.".to_string()),
+    };
+
+    if result > 0 {
+        info!("Paste number {} deleted.", id);
+        Html("Paste deleted successfully.".to_string())
+    } else {
+        Html("Paste not found.".to_string())
+    }
+}
 pub async fn serve_paste(Path(id): Path<i64>) -> impl IntoResponse {
     match get_paste(id).await {
         Ok(Some(paste)) => {

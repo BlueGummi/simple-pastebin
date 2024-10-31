@@ -60,6 +60,7 @@ async fn server() {
         .route("/config", get(serve_config))
         .route("/new", post(create_new_paste))
         .route("/:id", get(serve_paste))
+        .route("/:id/delete", post(delete_paste))
         .nest_service("/assets", ServeDir::new("assets"));
     if !config.void_mode.unwrap_or(false) {
         router = router.route("/log", get(serve_log));

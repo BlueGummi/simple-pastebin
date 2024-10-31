@@ -67,6 +67,14 @@ async fn server() {
         router = router.route("/log", get(serve_log));
         router = router.route("/", post(write_to_log));
     }
+    match std::net::TcpListener::bind(("127.0.0.1", config.port.unwrap())) {
+        Ok(_) => (),
+        Err(_) => {
+            error!("Port cannot be bound!");
+            std::process::exit(1);
+        }
+    }
+
     let listener = tokio::net::TcpListener::bind(format!(
         "{}:{}",
         config.address.as_ref().unwrap().trim(),

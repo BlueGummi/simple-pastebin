@@ -30,7 +30,6 @@ async fn get_paste(id: i64) -> Result<Option<Paste>> {
             })
         })
         .optional()?;
-    println!("{:?}", paste);
     Ok(paste)
 }
 pub async fn serve_raw(Path(id): Path<i64>) -> impl IntoResponse {

@@ -76,9 +76,7 @@ pub async fn delete_paste(Path(id): Path<i64>) -> impl IntoResponse {
 }
 pub async fn serve_paste(Path(id): Path<i64>) -> impl IntoResponse {
     match get_paste(id).await {
-        Ok(Some(paste)) => {
-            Html(render_paste_template(&paste.id, &paste.content))
-        }
+        Ok(Some(paste)) => Html(render_paste_template(&paste.id, &paste.content)),
         Ok(None) => {
             Html("<h1>404 Not Found</h1><p>The requested paste does not exist.</p>".to_string())
         }

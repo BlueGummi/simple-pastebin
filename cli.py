@@ -33,9 +33,7 @@ def signal_handler(sig, frame):
 
 def main():
     signal.signal(signal.SIGINT, signal_handler)
-
     os.system('clear')
-
     if os.path.isfile(SERVER_FILE):
         with open(SERVER_FILE, 'r') as file:
             server_link = trim_whitespace(file.read())
@@ -49,19 +47,15 @@ def main():
         with open(SERVER_FILE, 'w') as file:
             file.write(server_link)
         print(f"{GREEN}{BOLD}Server link saved to {SERVER_FILE}.{RESET}")
-
     if not server_link.startswith("http://") and not server_link.startswith("https://"):
         server_link = f"http://{server_link}"
-
     history = []
     while True:
-        command_input = input("> ").strip().split()
+        command_input = input("❯ ").strip().split()
         if not command_input:
             continue
-
         command = command_input[0]
         args = command_input[1:]
-
         if command == 'clear':
             os.system('clear')
         elif command == 'new':
@@ -69,7 +63,6 @@ def main():
                 print(f"Enter data to paste to {GREEN}{BOLD}main{RESET} (press Enter on an empty line to submit):")
             else:
                 print(f"Enter data to paste to {GREEN}{BOLD}new{RESET} (press Enter on an empty line to submit):")
-
             data = []
             while True:
                 line = input()
@@ -77,14 +70,12 @@ def main():
                     break
                 data.append(line)
             data = '\n'.join(data)
-
             if args and args[0] == 'main':
                 response = requests.post(server_link, data=data)
                 print(response.text)
                 continue
             else:
                 response = requests.post(f"{server_link}/new", data=data)
-
             if response.ok and "http" in response.text:
                 paste_number = response.text.split('/')[-1]
                 print(f"{GREEN}{BOLD}Paste {paste_number} created.{RESET}\n")
@@ -105,10 +96,10 @@ def main():
         elif command == 'delete':
             if args and args[0].isdigit():
                 response = requests.post(f"{server_link}/{args[0]}/delete")
-                print(response.text)  # Print the server's response
+                print(response.text)
             elif args and args[0] == 'main':
                 response = requests.post(f"{server_link}/clear")
-                print(response.text)  # Print the server's response
+                print(response.text)
             else:
                 print(f"{RED}{BOLD}Invalid argument for delete.{RESET}")
         elif command == 'exit':
@@ -123,9 +114,18 @@ def main():
                 command_str = ' '.join(item)
                 print(f"{i}: {command_str.strip()}")
             print("")
+        elif command == 'list':
+            if args and args[0].isdigit():
+                for i in range(int(args[0])):
+                    response = requests.get(f"{server_link}/raw/{i}")
+                    if response.text == "The requested paste does not exist" or response.text == "Could not retrieve the paste.":
+                        continue
+                    else:
+                        print(f"Paste {i}:\n {response.text}")
+            else:
+                print(f"{RED}Enter a number.")
         else:
             print(f"{RED}{BOLD}Invalid command. Please try again.{RESET}")
-
         history.append(command_input)
 
 if __name__ == "__main__":

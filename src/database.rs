@@ -77,8 +77,7 @@ pub async fn delete_paste(Path(id): Path<i64>) -> impl IntoResponse {
 pub async fn serve_paste(Path(id): Path<i64>) -> impl IntoResponse {
     match get_paste(id).await {
         Ok(Some(paste)) => {
-            let response_html = render_paste_template(&paste.id, &paste.content);
-            Html(response_html)
+            Html(render_paste_template(&paste.id, &paste.content))
         }
         Ok(None) => {
             Html("<h1>404 Not Found</h1><p>The requested paste does not exist.</p>".to_string())
@@ -90,8 +89,7 @@ pub async fn serve_paste(Path(id): Path<i64>) -> impl IntoResponse {
 fn render_paste_template(paste_id: &i64, paste_content: &str) -> String {
     let template = fs::read_to_string("assets/paste.html")
         .unwrap_or_else(|_| "<h1>Error</h1><p>Could not load the paste template.</p>".to_string());
-    let escaped_content = escape_html(paste_content);
-    let linked_content = convert_urls_to_links(&escaped_content);
+    let linked_content = convert_urls_to_links(&escape_html(paste_content));
 
     template
         .replace("<span id=\"paste-id\"></span>", &paste_id.to_string())

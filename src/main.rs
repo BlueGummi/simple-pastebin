@@ -29,7 +29,7 @@ async fn clear_file_after_duration(file_path: &str, duration: Duration) {
             .open(file_path)
             .and_then(|mut file| file.write_all(b""))
         {
-            eprintln!("Failed to clear file: {}", e);
+            error!("Failed to clear file: {}", e);
         } else {
             info!("File cleared after {:?}", start_time.elapsed());
         }
@@ -125,7 +125,7 @@ async fn write_to_log(body: String) -> impl IntoResponse {
     if let Some(parent) = log_path.parent() {
         if !parent.exists() {
             if let Err(e) = create_dir_all(parent) {
-                eprintln!("Couldn't create directories: {}", e);
+                error!("Couldn't create directories: {}", e);
                 return (
                     axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                     "Error creating directories",
@@ -144,7 +144,7 @@ async fn write_to_log(body: String) -> impl IntoResponse {
     {
         Ok(_) => "Data written to file".into_response(),
         Err(e) => {
-            eprintln!("Couldn't write to file: {}", e);
+            error!("Couldn't write to file: {}", e);
             (
                 axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 "Error writing to file",

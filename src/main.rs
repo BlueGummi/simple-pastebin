@@ -42,7 +42,7 @@ async fn main() {
     env_logger::init();
     let _ = Connection::open("pastes.db");
     let total_duration = config::parse_duration(&config.expiration);
-    info!("Application started.");
+    info!("Server started.");
     // Spawn a task to clear the file after the specified duration
     let log_name = config.log_name.expect("log_name issue").trim().to_string();
     tokio::spawn(async move {

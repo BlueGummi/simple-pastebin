@@ -43,7 +43,7 @@ pub async fn create_new_paste(content: String) -> impl IntoResponse {
     let config = declare_config();
     match create_paste(content).await {
         Ok(id) => {
-            info!("Paste number {} created.", id);
+            info!("Paste {} created.", id);
             let link = format!(
                 "http://{}:{}/{}",
                 config.address.unwrap(),
@@ -68,8 +68,8 @@ pub async fn delete_paste(Path(id): Path<i64>) -> impl IntoResponse {
     };
 
     if result > 0 {
-        info!("Paste number {} deleted.", id);
-        Html(format!("Paste {} deleted successfully.", id).to_string())
+        info!("Paste {} deleted.", id);
+        Html(format!("Paste {} deleted.", id).to_string())
     } else {
         Html("Paste not found.".to_string())
     }

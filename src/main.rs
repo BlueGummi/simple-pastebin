@@ -115,11 +115,7 @@ async fn server() {
 async fn write_to_log(body: String) -> impl IntoResponse {
     let config = declare_config();
     let data = format!("{} |: {}", Local::now().format("%D %I:%M:%S %p"), body);
-
-    if config.display_data.unwrap_or(false) {
-        info!("{}", data);
-    }
-
+    info!("{}", data);
     // Create parent directories if they do not exist
     let log_path = Path::new(config.log_name.as_ref().unwrap().trim());
     if let Some(parent) = log_path.parent() {

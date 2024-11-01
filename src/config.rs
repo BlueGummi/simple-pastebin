@@ -7,7 +7,6 @@ pub struct Config {
     pub port: Option<u16>,
     pub expiration: Option<String>,
     pub log_name: Option<String>,
-    pub display_data: Option<bool>,
     pub void_mode: Option<bool>,
     pub history: Option<bool>,
     pub history_log: Option<String>,
@@ -20,7 +19,6 @@ impl Default for Config {
             port: None,
             expiration: None,
             log_name: None,
-            display_data: Some(true),
             void_mode: Some(false),
             history: Some(false),
             history_log: None,
@@ -41,7 +39,6 @@ pub fn declare_config() -> Config {
     config.expiration = cli.expiration.or(config.expiration);
     config.log_name = cli.log_name.or(config.log_name);
     config.log_level = cli.log_level.or(config.log_level);
-    config.display_data = cli.display_data.or(config.display_data);
     config.void_mode = cli.void_mode.or(config.void_mode);
     config.history = cli.history.or(config.history);
     config.history_log = cli.history_log.or(config.history_log);

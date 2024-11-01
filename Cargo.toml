@@ -8,8 +8,8 @@ tokio = { version = "*", features = ["full"] }
 axum = "*"
 chrono = "*"
 toml = "*"
-serde = "*"
 config = "*"
+serde  = "*"
 tower-http =  { version = "*", features = ["fs"] }
 clap = { version = "*", features = ["derive"] }
 log = "*"

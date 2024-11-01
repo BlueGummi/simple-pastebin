@@ -1,7 +1,7 @@
-port = 8080
-log_name = "logs/input.log"
-history_log = "logs/history.log"
-display_data = true
-display_info = true
-void_mode = false
+address = "0.0.0.0"
+port = 6060
+expiration = 10m
+log_name = "input.log"
+log_level = "info"
 history = true
+history_log = "history.log"

@@ -31,7 +31,13 @@ async fn clear_file_after_duration(file_path: &str, duration: Duration) {
         {
             error!("Failed to clear file: {}", e);
         } else {
-            info!("File cleared after {:?}", start_time.elapsed());
+            if start_time.elapsed().as_secs() % 3600 == 0 {
+                info!("File cleared after {} hours.", start_time.elapsed().as_secs()/3600);
+            } else if start_time.elapsed().as_secs() % 60 == 0 {
+                info!("File cleared after {} minutes.", start_time.elapsed().as_secs()/60);
+            } else {
+                info!("File cleared after {} seconds.", start_time.elapsed().as_secs());
+            }
         }
     }
 }

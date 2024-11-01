@@ -1,7 +1,2 @@
+port = 4040
 address = "0.0.0.0"
-port = 6060
-expiration = 10m
-log_name = "input.log"
-log_level = "info"
-history = true
-history_log = "history.log"

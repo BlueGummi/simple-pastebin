@@ -75,6 +75,17 @@ async fn server() {
         }
     }
 
+    match std::net::TcpListener::bind(format!(
+        "{}:{}",
+        config.address.as_ref().unwrap().trim(),
+        config.port.unwrap()
+    )) {
+        Ok(_) => (),
+        Err(_) => {
+            error!("Address {} cannot be assigned!", config.address.unwrap());
+            std::process::exit(1);
+        }
+    }
     let listener = tokio::net::TcpListener::bind(format!(
         "{}:{}",
         config.address.as_ref().unwrap().trim(),

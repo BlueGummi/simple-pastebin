@@ -43,9 +43,7 @@ pub fn declare_config() -> Config {
     config.history = cli.history.or(config.history);
     config.history_log = cli.history_log.or(config.history_log);
     config.log_level.get_or_insert("info".to_string());
-    config
-        .address
-        .get_or_insert_with(|| "127.0.0.1".to_string());
+    config.address.get_or_insert_with(|| "0.0.0.0".to_string());
     config.port.get_or_insert(6060);
     config.expiration.get_or_insert("10m".to_string());
     config.log_name.get_or_insert("input.log".to_string());

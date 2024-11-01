@@ -5,7 +5,9 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /usr/bin
 COPY assets/ ./assets/
+RUN echo 'Assets directory copied."
 COPY target/release/simple_pastebin .
-COPY pastes.db .
-COPY config.toml .
+RUN echo 'Binary copied."
+COPY pastes.db* .
+COPY config.toml* .
 CMD ["./simple_pastebin"]

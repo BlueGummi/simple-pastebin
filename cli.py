@@ -123,7 +123,7 @@ def main():
                     else:
                         print(f"Paste {i}:\n {response.text}")
             else:
-                print(f"{RED}Enter a number.")
+                print(f"{RED}Enter a number.{RESET}")
         else:
             print(f"{RED}{BOLD}Invalid command. Please try again.{RESET}")
         history.append(command_input)

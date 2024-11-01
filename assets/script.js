@@ -139,8 +139,9 @@ async function createNewPaste(inputData) {
         console.log("Response received:", response); 
         if (!response.ok) throw new Error('Network response was not ok');
 
-        let message = await response.text(); 
-        document.getElementById('newPasteMessage').textContent = message; 
+        let message = await response.text();
+        message = convertUrlsToLinks(message);
+        document.getElementById('newPasteMessage').innerHTML = message;
         loadLog(); 
     } catch (error) {
         console.error('Error creating new paste:', error);

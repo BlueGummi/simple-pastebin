@@ -69,14 +69,6 @@ struct Cli {
     #[arg(short, long)]
     log_name: Option<String>,
 
-    /// Directory for pastes
-    #[arg(long)]
-    paste_dir: Option<String>,
-
-    /// Display data
-    #[arg(long)]
-    display_data: Option<bool>,
-
     /// Void mode flag
     #[arg(long)]
     void_mode: Option<bool>,

@@ -1,4 +1,6 @@
 use clap::Parser;
+use colored::Colorize;
+use log::warn;
 use serde::Deserialize;
 use std::fs;
 #[derive(Debug, Deserialize)]
@@ -28,7 +30,12 @@ impl Default for Config {
 }
 pub fn declare_config() -> Config {
     let config_content = fs::read_to_string("config.toml").unwrap_or_else(|_| {
-        eprintln!("Failed to read config.toml. Using default configuration.");
+        warn!(
+            "{}",
+            "Failed to read config.toml. Using default configuration."
+                .bold()
+                .yellow()
+        );
         String::new()
     });
 

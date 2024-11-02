@@ -8,10 +8,10 @@ WORKDIR ~
 
 COPY assets/ ./assets/
 
-RUN echo 'Assets directory copied."
+RUN echo 'Assets directory copied.'
 COPY target/release/simple_pastebin .
 
-RUN echo 'Binary copied."
+RUN echo 'Binary copied.'
 
 COPY pastes.db* .
 COPY config.toml* .

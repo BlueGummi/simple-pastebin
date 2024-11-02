@@ -1,10 +1,12 @@
 use crate::declare_config;
 use axum::{extract::Path, response::Html, response::IntoResponse};
-use log::info;
+use colored::Colorize;
+use log::{info, warn};
 use regex::Regex;
 use rusqlite::{params, Connection, OptionalExtension, Result};
 use serde::{Deserialize, Serialize};
 use std::fs;
+
 #[derive(Debug, Serialize, Deserialize)]
 struct Paste {
     id: i64,
@@ -43,7 +45,11 @@ pub async fn create_new_paste(content: String) -> impl IntoResponse {
     let config = declare_config();
     match create_paste(content).await {
         Ok(id) => {
-            info!("Paste {} created.", id);
+            info!(
+                "Paste {} {}",
+                id.to_string().bold().blue(),
+                "created.".bold().green()
+            );
             let link = format!(
                 "http://{}:{}/{}",
                 config.address.unwrap(),
@@ -68,7 +74,11 @@ pub async fn delete_paste(Path(id): Path<i64>) -> impl IntoResponse {
     };
 
     if result > 0 {
-        info!("Paste {} deleted.", id);
+        info!(
+            "Paste {} {}",
+            id.to_string().bold().blue(),
+            "deleted.".bold().red()
+        );
         Html(format!("Paste {} deleted.", id).to_string())
     } else {
         Html("Paste not found.".to_string())
@@ -78,6 +88,7 @@ pub async fn serve_paste(Path(id): Path<i64>) -> impl IntoResponse {
     match get_paste(id).await {
         Ok(Some(paste)) => Html(render_paste_template(&paste.id, &paste.content)),
         Ok(None) => {
+            warn!("Client requested paste {} {}", id, " not found");
             Html("<h1>404 Not Found</h1><p>The requested paste does not exist.</p>".to_string())
         }
         Err(_) => Html("<h1>Error</h1><p>Could not retrieve the paste.</p>".to_string()),

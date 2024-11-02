@@ -1,5 +1,6 @@
 use crate::*;
 use axum::response::IntoResponse;
+use colored::Colorize;
 use log::{error, info, warn};
 use std::{fs, path::Path};
 use tokio::fs::{metadata, File};
@@ -67,8 +68,7 @@ pub async fn clear_file_if_too_large<P: AsRef<Path>>(file_path: P) -> io::Result
     } else {
         warn!("File does not exist. Creating: {:?}", file_path.as_ref());
         let mut file = File::create(&file_path).await?;
-        file.write_all(b"")
-            .await?;
+        file.write_all(b"").await?;
         info!("File created successfully.");
     }
 

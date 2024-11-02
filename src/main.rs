@@ -14,6 +14,7 @@ mod database;
 use database::*;
 mod helpers;
 use crate::helpers::*;
+use colored::Colorize;
 use log::{error, info};
 use tower_http::services::ServeDir;
 
@@ -29,21 +30,21 @@ async fn clear_file_after_duration(file_path: &str, duration: Duration) {
             .open(file_path)
             .and_then(|mut file| file.write_all(b""))
         {
-            error!("Failed to clear file: {}", e);
+            error!("{} {}", "Failed to clear file:".bold(), e.to_string().red());
         } else if start_time.elapsed().as_secs() % 3600 == 0 {
             info!(
                 "File cleared after {} hours.",
-                start_time.elapsed().as_secs() / 3600
+                (start_time.elapsed().as_secs() / 3600).to_string().green()
             );
         } else if start_time.elapsed().as_secs() % 60 == 0 {
             info!(
                 "File cleared after {} minutes.",
-                start_time.elapsed().as_secs() / 60
+                (start_time.elapsed().as_secs() / 60).to_string().green()
             );
         } else {
             info!(
                 "File cleared after {} seconds.",
-                start_time.elapsed().as_secs()
+                (start_time.elapsed().as_secs()).to_string().green()
             );
         }
     }
@@ -54,7 +55,7 @@ async fn main() {
     let config = declare_config();
     env_logger::init();
     let total_duration = config::parse_duration(&config.expiration);
-    info!("Server started.");
+    info!("{}", "Server started.".bold().green());
     tokio::spawn(async move {
         clear_file_after_duration(
             declare_config().log_name.expect("log_name issue").trim(),
@@ -73,12 +74,12 @@ async fn main() {
             )
             .await
             .unwrap_or_else(|err| {
-                error!("Failed to clear log file: {:?}", err);
+                error!("{} to clear log file: {:?}", "Failed".bold().red(), err.to_string().red());
             });
             clear_file_if_too_large("pastes.db")
                 .await
                 .unwrap_or_else(|err| {
-                    error!("Failed to clear database file: {:?}", err);
+                    error!("{} to clear database file: {:?}", "Failed".bold().red(), err.to_string().red());
                 });
 
             time::sleep(Duration::from_secs(5)).await;
@@ -105,7 +106,7 @@ async fn server() {
     match std::net::TcpListener::bind(("127.0.0.1", config.port.unwrap())) {
         Ok(_) => (),
         Err(_) => {
-            error!("Port {} cannot be bound!", config.port.unwrap());
+            error!("{} {} {}", "Port".yellow(), config.port.unwrap().to_string().bright_blue(), "cannot be bound!".bold().red());
             std::process::exit(1);
         }
     }
@@ -117,7 +118,7 @@ async fn server() {
     )) {
         Ok(_) => (),
         Err(_) => {
-            error!("Address {} cannot be assigned!", config.address.unwrap());
+            error!("{} {} {}", "Address".yellow(), config.address.unwrap().bright_blue(), "cannot be assigned!".bold().red());
             std::process::exit(1);
         }
     }
@@ -131,16 +132,17 @@ async fn server() {
 
     info!(
         "{} {} {}:{}",
-        "Server listening",
-        "on",
-        config.address.as_ref().unwrap().trim(),
-        config.port.unwrap()
+        "Server listening".bold().green(),
+        "on".blue().bold(),
+        config.address.as_ref().unwrap().trim().to_string().bold().yellow(),
+        config.port.unwrap().to_string().blue().bold()
     );
-    info!("Main log at {}", config.log_name.as_ref().unwrap());
-    info!("Press Ctrl-C to exit.");
+    info!("Main log at {}", config.log_name.as_ref().unwrap().green());
+    info!("{}", "Press Ctrl-C to exit.".bold().red());
     info!(
-        "File automatically clears after {}",
-        config.expiration.unwrap().trim()
+        "File {} after {}",
+        "automatically clears".green(),
+        config.expiration.unwrap().trim().blue()
     );
     let server_task = tokio::spawn({
         async move {
@@ -150,7 +152,7 @@ async fn server() {
 
     // Wait for the shutdown signal
     signal::ctrl_c().await.expect("failed to listen for event");
-    info!("Shutting down...");
+    info!("{}", "Shutting down...".bold().red());
     if config.history.unwrap_or(false) {
         write_to_history("Shutdown".to_string()).await;
     }
@@ -161,7 +163,7 @@ async fn server() {
 async fn write_to_log(body: String) -> impl IntoResponse {
     let config = declare_config();
     let data = format!("{} |: {}", Local::now().format("%D %I:%M:%S %p"), body);
-    info!("{}", data);
+    info!("{}", data.bold().bright_white());
     // Create parent directories if they do not exist
     let log_path = Path::new(config.log_name.as_ref().unwrap().trim());
     if let Some(parent) = log_path.parent() {
@@ -186,7 +188,7 @@ async fn write_to_log(body: String) -> impl IntoResponse {
     {
         Ok(_) => "Data written to main pastebin.".into_response(),
         Err(e) => {
-            error!("Couldn't write to file: {}", e);
+            error!("Couldn't write to file: {}", e.to_string().bold().red());
             (
                 axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 "Error writing to file",
@@ -208,7 +210,7 @@ async fn write_to_history(mut data: String) {
     if let Some(parent) = history_log_path.parent() {
         if !parent.exists() {
             if let Err(e) = create_dir_all(parent) {
-                error!("Couldn't create directories: {}", e);
+                error!("Couldn't create directories: {}", e.to_string().bold().red());
                 return;
             }
         }

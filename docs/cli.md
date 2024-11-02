@@ -19,7 +19,7 @@ The CLI will put the user into a **command-prompt**, where certain commands can 
 | `help   | none | Displays all commands and their arguments. | `help` |
 | `cmd`   | a command | Runs a **command in the terminal**. | `cmd whoami` |
 | `history` | none | Prints out **all previous commands** executed in the session. | `history` |
-
+| `list`  | number | Prints out **all pastes** from 0 to a given number. | `list 50` |
 ### Configuration
 
 Configuration for the CLI is ***very*** **minimal**, as only the **server address** is stored in `server.txt` in the directory of the CLI program. If no `server.txt` is detected, the CLI will **prompt the user for a server address**.

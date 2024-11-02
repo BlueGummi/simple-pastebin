@@ -25,6 +25,7 @@ async fn clear_file_after_duration(file_path: &str, duration: Duration) {
 
         if let Err(e) = OpenOptions::new()
             .write(true)
+            .create(true)
             .truncate(true)
             .open(file_path)
             .and_then(|mut file| file.write_all(b""))
@@ -155,7 +156,7 @@ async fn write_to_log(body: String) -> impl IntoResponse {
         .open(log_path)
         .and_then(|mut file| writeln!(file, "{}", data))
     {
-        Ok(_) => "Data written to file".into_response(),
+        Ok(_) => "Data written to main pastebin.".into_response(),
         Err(e) => {
             error!("Couldn't write to file: {}", e);
             (

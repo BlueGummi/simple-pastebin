@@ -50,6 +50,12 @@ def main():
     if not server_link.startswith("http://") and not server_link.startswith("https://"):
         server_link = f"http://{server_link}"
     history = []
+    try:
+        response = requests.get(server_link)
+        if response.status_code == 200:
+            continue
+        else:
+            exit()
     while True:
         command_input = input("❯ ").strip().split()
         if not command_input:

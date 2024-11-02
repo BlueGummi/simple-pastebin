@@ -124,31 +124,37 @@ async function deleteLog() {
         }
     }
 }
-
 async function createNewPaste(inputData) {
-    console.log("Creating new paste with data:", inputData); 
+    console.log("Creating new paste with data:", inputData);
     try {
-        let response = await fetch('/new', { 
+        let response = await fetch('/new', {
             method: 'POST',
             headers: {
                 'Content-Type': 'text/plain',
             },
-            body: inputData 
+            body: inputData
         });
 
-        console.log("Response received:", response); 
+        console.log("Response received:", response);
         if (!response.ok) throw new Error('Network response was not ok');
 
         let message = await response.text();
-        message = convertUrlsToLinks(message);
+        const numberMatch = message.match(/\/\d+$/);
+
+        if (numberMatch) {
+            const number = numberMatch[0];
+            let clientUrl = `${window.location.origin}${number}`;
+            clientUrl = convertUrlsToLinks(clientUrl);
+            message = `Paste successful, view it at ${clientUrl}`;
+        }
+
         document.getElementById('newPasteMessage').innerHTML = message;
-        loadLog(); 
+        loadLog();
     } catch (error) {
         console.error('Error creating new paste:', error);
         document.getElementById('newPasteMessage').textContent = 'Error creating new paste.';
     }
 }
-
 document.getElementById('inputForm').addEventListener('submit', async function(event) {
     event.preventDefault(); 
     const inputData = document.getElementById('input').value; 

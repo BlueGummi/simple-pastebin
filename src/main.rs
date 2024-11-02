@@ -52,14 +52,21 @@ async fn clear_file_after_duration(file_path: &str, duration: Duration) {
 
 #[tokio::main]
 async fn main() {
-    let config = declare_config();
     env_logger::init();
     let _ = Connection::open("pastes.db");
     let total_duration = config::parse_duration(&config.expiration);
     info!("Server started.");
     let log_name = config.log_name.expect("log_name issue").trim().to_string();
     tokio::spawn(async move {
-        clear_file_after_duration(&log_name, Duration::from_secs(total_duration)).await;
+        clear_file_after_duration(
+            &declare_config()
+                .log_name
+                .expect("log_name issue")
+                .trim()
+                .to_string(),
+            Duration::from_secs(total_duration),
+        )
+        .await;
     });
     tokio::spawn(async move {
         loop {

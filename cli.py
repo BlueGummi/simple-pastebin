@@ -53,9 +53,12 @@ def main():
     try:
         response = requests.get(server_link)
         if response.status_code == 200:
-            continue
+            pass
         else:
-            exit()
+            print(f"{RED}Server {server_link} cannot be reached.")
+    except requests.exceptions.RequestException as e:
+        print(f"{RED}{BOLD}Server at {server_link} cannot be reached.{RESET}")
+        exit()
     while True:
         command_input = input("❯ ").strip().split()
         if not command_input:
@@ -129,7 +132,7 @@ def main():
                     else:
                         print(f"Paste {i}:\n {response.text}")
             else:
-                print(f"{RED}Enter a number.{RESET}")
+                print(f"{RED}{BOLD}Enter a number.{RESET}")
         else:
             print(f"{RED}{BOLD}Invalid command. Please try again.{RESET}")
         history.append(command_input)

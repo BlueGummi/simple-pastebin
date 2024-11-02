@@ -4,16 +4,16 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-tokio = { version = "*", features = ["full"] }
-axum = "*"
-chrono = "*"
-toml = "*"
-config = "*"
-serde  = "*"
-tower-http =  { version = "*", features = ["fs"] }
-clap = { version = "*", features = ["derive"] }
-log = "*"
-env_logger = "*"
-rusqlite = { version = "*", features = ["bundled"] }
-regex = "*"
+tokio = { version = "1", features = ["full"] }
+axum = "0.7.7"
+chrono = "0.4.38"
+toml = "0.8.19"
+config = "0.14.1"
+serde  = "1.0.214"
+tower-http =  { version = "0.6.1", features = ["fs"] }
+clap = { version = "4.5.20", features = ["derive"] }
+log = "0.4.22"
+env_logger = "0.11.5"
+rusqlite = { version = "0.32.1", features = ["bundled"] }
+regex = "1.11.1"
 

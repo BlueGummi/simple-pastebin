@@ -224,7 +224,7 @@ async fn write_to_history(mut data: String) {
     {
         Ok(_) => {}
         Err(e) => {
-            error!("Couldn't write to history: {}", e);
+            error!("Couldn't write to history: {}", e.to_string().bold().red());
         }
     }
 }

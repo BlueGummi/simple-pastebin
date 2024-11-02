@@ -4,7 +4,6 @@ use axum::{
     Router,
 };
 use chrono::Local;
-use rusqlite::Connection;
 use std::path::Path;
 use std::time::{Duration, Instant};
 use std::{fs::create_dir_all, fs::OpenOptions, io::Write};
@@ -53,10 +52,9 @@ async fn clear_file_after_duration(file_path: &str, duration: Duration) {
 #[tokio::main]
 async fn main() {
     env_logger::init();
-    let _ = Connection::open("pastes.db");
+    let config = declare_config();
     let total_duration = config::parse_duration(&config.expiration);
     info!("Server started.");
-    let log_name = config.log_name.expect("log_name issue").trim().to_string();
     tokio::spawn(async move {
         clear_file_after_duration(
             &declare_config()

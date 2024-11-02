@@ -57,11 +57,7 @@ async fn main() {
     info!("Server started.");
     tokio::spawn(async move {
         clear_file_after_duration(
-            &declare_config()
-                .log_name
-                .expect("log_name issue")
-                .trim()
-                .to_string(),
+            declare_config().log_name.expect("log_name issue").trim(),
             Duration::from_secs(total_duration),
         )
         .await;

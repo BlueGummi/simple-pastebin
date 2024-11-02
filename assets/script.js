@@ -88,11 +88,11 @@ function parseLogData(data) {
     });
 
     document.getElementById('timestamps').textContent = timestamps.join('\n');
-    document.getElementById('fileContent').innerHTML = content.join('<br>'); 
+    document.getElementById('fileContent').innerHTML = content.join('<br>');
 }
 
 function convertUrlsToLinks(text) {
-    return text.replace(/(https?:\/\/[^\s]+)/g, url => 
+    return text.replace(/(https?:\/\/[^\s]+)/g, url =>
         `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`
     );
 }

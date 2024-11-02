@@ -54,7 +54,7 @@ pub async fn clear_file_if_too_large<P: AsRef<Path>>(file_path: P) -> io::Result
         let file_size = file_metadata.len();
         if file_size > MAX_SIZE {
             warn!(
-                "File exceeds 20 MB. Clearing the file: {:?}",
+                "File exceeds 10 MB. Clearing the file: {:?}",
                 file_path.as_ref()
             );
             let mut file = File::create(&file_path).await?;

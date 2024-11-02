@@ -1,7 +1,11 @@
 use crate::*;
 use axum::response::IntoResponse;
-use log::{error, info};
-use std::fs;
+use log::{error, info, warn};
+use std::{fs, path::Path};
+use tokio::fs::{metadata, File};
+use tokio::io::{self, AsyncWriteExt};
+
+const MAX_SIZE: u64 = 10 * 1024 * 1024;
 pub async fn clear_log() -> impl IntoResponse {
     let config = declare_config();
     match fs::write(config.log_name.as_ref().unwrap().trim(), "") {
@@ -44,4 +48,22 @@ pub async fn serve_config() -> impl IntoResponse {
         config.expiration.unwrap(),
         config.log_name.unwrap()
     )
+}
+pub async fn clear_file_if_too_large<P: AsRef<Path>>(file_path: P) -> io::Result<()> {
+    let file_metadata = metadata(&file_path).await?;
+    let file_size = file_metadata.len();
+    if file_size > MAX_SIZE {
+        warn!(
+            "File exceeds 20 MB. Clearing the file: {:?}",
+            file_path.as_ref()
+        );
+        let mut file = File::create(file_path).await?;
+
+        file.write_all(b"File cleared due to size limit exceeded.")
+            .await?;
+
+        info!("File cleared successfully.");
+    }
+
+    Ok(())
 }

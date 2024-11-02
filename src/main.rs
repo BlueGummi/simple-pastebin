@@ -31,14 +31,21 @@ async fn clear_file_after_duration(file_path: &str, duration: Duration) {
             .and_then(|mut file| file.write_all(b""))
         {
             error!("Failed to clear file: {}", e);
+        } else if start_time.elapsed().as_secs() % 3600 == 0 {
+            info!(
+                "File cleared after {} hours.",
+                start_time.elapsed().as_secs() / 3600
+            );
+        } else if start_time.elapsed().as_secs() % 60 == 0 {
+            info!(
+                "File cleared after {} minutes.",
+                start_time.elapsed().as_secs() / 60
+            );
         } else {
-            if start_time.elapsed().as_secs() % 3600 == 0 {
-                info!("File cleared after {} hours.", start_time.elapsed().as_secs()/3600);
-            } else if start_time.elapsed().as_secs() % 60 == 0 {
-                info!("File cleared after {} minutes.", start_time.elapsed().as_secs()/60);
-            } else {
-                info!("File cleared after {} seconds.", start_time.elapsed().as_secs());
-            }
+            info!(
+                "File cleared after {} seconds.",
+                start_time.elapsed().as_secs()
+            );
         }
     }
 }
@@ -50,12 +57,32 @@ async fn main() {
     let _ = Connection::open("pastes.db");
     let total_duration = config::parse_duration(&config.expiration);
     info!("Server started.");
-    // Spawn a task to clear the file after the specified duration
     let log_name = config.log_name.expect("log_name issue").trim().to_string();
     tokio::spawn(async move {
         clear_file_after_duration(&log_name, Duration::from_secs(total_duration)).await;
     });
+    tokio::spawn(async move {
+        loop {
+            clear_file_if_too_large(
+                &declare_config()
+                    .log_name
+                    .expect("log_name issue")
+                    .trim()
+                    .to_string(),
+            )
+            .await
+            .unwrap_or_else(|err| {
+                error!("Failed to clear log file: {:?}", err);
+            });
+            clear_file_if_too_large("pastes.db")
+                .await
+                .unwrap_or_else(|err| {
+                    error!("Failed to clear database file: {:?}", err);
+                });
 
+            time::sleep(Duration::from_secs(5)).await;
+        }
+    });
     server().await;
 }
 

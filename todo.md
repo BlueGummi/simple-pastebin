@@ -1,6 +1,6 @@
 TODO: FIX MOBILE BUTTONS
 
-TODO: Add overflow checking
+DONE: Add overflow checking
 
 TODO: Add HTML proper parsing so that escaped HTML is literal and not .innerHTML
 

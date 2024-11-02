@@ -51,8 +51,8 @@ async fn clear_file_after_duration(file_path: &str, duration: Duration) {
 
 #[tokio::main]
 async fn main() {
-    env_logger::init();
     let config = declare_config();
+    env_logger::init();
     let total_duration = config::parse_duration(&config.expiration);
     info!("Server started.");
     tokio::spawn(async move {

@@ -50,19 +50,26 @@ pub async fn serve_config() -> impl IntoResponse {
     )
 }
 pub async fn clear_file_if_too_large<P: AsRef<Path>>(file_path: P) -> io::Result<()> {
-    let file_metadata = metadata(&file_path).await?;
-    let file_size = file_metadata.len();
-    if file_size > MAX_SIZE {
-        warn!(
-            "File exceeds 20 MB. Clearing the file: {:?}",
-            file_path.as_ref()
-        );
-        let mut file = File::create(file_path).await?;
+    if let Ok(file_metadata) = metadata(&file_path).await {
+        let file_size = file_metadata.len();
+        if file_size > MAX_SIZE {
+            warn!(
+                "File exceeds 20 MB. Clearing the file: {:?}",
+                file_path.as_ref()
+            );
+            let mut file = File::create(&file_path).await?;
 
-        file.write_all(b"File cleared due to size limit exceeded.")
+            file.write_all(b"File cleared due to size limit exceeded.")
+                .await?;
+
+            info!("File cleared successfully.");
+        }
+    } else {
+        warn!("File does not exist. Creating: {:?}", file_path.as_ref());
+        let mut file = File::create(&file_path).await?;
+        file.write_all(b"")
             .await?;
-
-        info!("File cleared successfully.");
+        info!("File created successfully.");
     }
 
     Ok(())

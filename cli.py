@@ -24,6 +24,7 @@ def help_command():
     print(f"  {GREEN}{BOLD}help{RESET}")
     print(f"  {GREEN}{BOLD}cmd {YELLOW}'<command>'")
     print(f"  {GREEN}{BOLD}history{RESET}")
+    print(f"  {GREEN}{BOLD}list{RESET} {BLUE}<number>")
 
 def trim_whitespace(s):
     return ' '.join(s.split())

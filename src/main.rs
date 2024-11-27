@@ -49,11 +49,16 @@ async fn clear_file_after_duration(file_path: &str, duration: Duration) {
         }
     }
 }
+fn display_config() {
+    let config = declare_config();
+    info!("configuration is {:?}", config);
 
+}
 #[tokio::main]
 async fn main() {
     let config = declare_config();
     env_logger::init();
+    display_config();
     let total_duration = config::parse_duration(&config.expiration);
     info!("{}", "Server started.".bold().green());
     tokio::spawn(async move {

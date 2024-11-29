@@ -10,9 +10,17 @@ The Docker image will **copy** `config.toml`, therefore **all configuration** mu
 
 ## Building and running
 
-To build the `Dockerfile`, `docker build -t NAME .` can be *run in the directory* of the **repository containing the Dockerfile**.
+To build the `Dockerfile`, 
+```
+docker build -t NAME .
+``` 
+can be *run in the directory* of the **repository containing the Dockerfile**.
 
-To **run** the Docker container, `docker run --it --name CONTAINER_NAME NAME` can be run.
+To **run** the Docker container, 
+```
+docker run --it --name CONTAINER_NAME NAME
+``` 
+can be run.
 
 The Dockerfile pulls the **Debian Bookworm Slim Docker image**.
 
@@ -22,6 +30,13 @@ To run the Dockerfile in the **background**, the `-d` flag can be passed.
 
 If the Docker container is **being run in the foreground**, *Ctrl-C* can be pressed to **gracefully shutdown**. Otherwise, `docker stop CONTAINER_NAME` can be executed to **stop the container**. 
 
-If no name is specified, run `docker ps` to view **all running containers**, then find the **name** of the image and run `docker stop CONTAINER_NAME`
+If no name is specified, run 
+```
+docker ps
+```
+to view **all running containers**, then find the **name** of the image and run 
+```
+docker stop CONTAINER_NAME
+```
 
 

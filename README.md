@@ -7,10 +7,14 @@ A *simple pastebin* webserver, with a backend written in Rust  🚀 🚀 🚀 an
 To get started, **RustC** and **Cargo** must be installed, as well as **Python** if the frontend CLI is to be used.
 
 
-`git clone https://github.com/BlueGummi/simple-pastebin`
+```
+git clone https://github.com/BlueGummi/simple-pastebin
+```
 
 
-`cargo run --release`
+```
+cargo run --release
+```
 
 
 This will **start** the server on the **default IP Address and port**, being `0.0.0.0:6060`.

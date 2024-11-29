@@ -2,7 +2,11 @@
 
 ## Initialization
 
-This webserver has a **Python frontend CLI**, which can be **executed** with `python cli.py`
+This webserver has a **Python frontend CLI**, which can be **executed** with 
+
+```
+python cli.py
+```
 
 The CLI will put the user into a **command-prompt**, where certain commands can be executed.
 
